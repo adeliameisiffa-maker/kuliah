@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Kuliah & Keuangan</title>
+    <!-- Tailwind CSS untuk Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome untuk Ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js untuk Grafik -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Flatpickr untuk Kalender -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Pickr untuk Color Picker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/classic.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f0f2f5; }
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.85); 
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+        }
+        .hide { display: none; }
+        .sidebar-hover:hover {
+            transform: translateX(4px);
+            transition: all 0.2s;
+        }
+        .stat-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+        }
+        .schedule-item {
+            transition: all 0.2s ease;
+        }
+        .schedule-item:hover {
+            background-color: #f8f9ff;
+            transform: scale(1.01);
+        }
+        .flatpickr-calendar {
+            z-index: 1000 !important;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .notification-badge {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .color-picker-option {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+        .color-picker-option:hover {
+            transform: scale(1.15);
+        }
+        .color-picker-option.active {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 2px #fff, 0 0 0 4px #4f46e5;
+        }
+        .calendar-event-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 4px;
+        }
+        .flatpickr-day.has-event {
+            position: relative;
+        }
+        .flatpickr-day.has-event::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+        .repeat-badge {
+            background: #fbbf24;
+            color: #78350f;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        .checkbox-custom {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #4f46e5;
+        }
+        .pickr-container {
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .pickr-container .pcr-button {
+            width: 36px !important;
+            height: 36px !important;
+            border-radius: 50% !important;
+            border: 3px solid #e5e7eb !important;
+            transition: all 0.2s !important;
+        }
+        .pickr-container .pcr-button:hover {
+            transform: scale(1.1);
+        }
+        .color-preview {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 3px solid #e5e7eb;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 8px;
+            transition: all 0.3s;
+        }
+        .custom-color-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .week-input {
+            width: 80px;
+            padding: 6px 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .week-input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        .week-input::-webkit-inner-spin-button {
+            opacity: 1;
+        }
+        .color-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 12px 4px 8px;
+            background: white;
+            border-radius: 20px;
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s;
+        }
+        .color-legend-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="text-gray-800 h-screen flex overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-72 bg-gradient-to-b from-indigo-700 to-indigo-900 text-white flex flex-col hidden md:flex transition-all duration-300 shadow-2xl">
+        <div class="p-6 text-2xl font-bold border-b border-indigo-600/50 flex items-center gap-3">
+            <div class="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center">
+                <i class="fa-solid fa-graduation-cap text-xl"></i>
+            </div>
+            <span>MyDash</span>
+        </div>
+        <nav class="flex-1 p-4 space-y-2 mt-4">
+            <button onclick="switchTab('dashboard')" id="btn-dashboard" class="w-full flex items-center gap-3 p-3 rounded-xl bg-indigo-600/50 hover:bg-indigo-600 transition text-left sidebar-hover">
+                <i class="fa-solid fa-chart-pie w-5 text-center"></i> Dashboard
+            </button>
+            <button onclick="switchTab('schedule')" id="btn-schedule" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-600 transition text-left sidebar-hover">
+                <i class="fa-regular fa-calendar-days w-5 text-center"></i> Jadwal Kuliah
+            </button>
+            <button onclick="switchTab('finance')" id="btn-finance" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-600 transition text-left sidebar-hover">
+                <i class="fa-solid fa-wallet w-5 text-center"></i> Keuangan
+            </button>
+            <button onclick="switchTab('calendar')" id="btn-calendar" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-600 transition text-left sidebar-hover">
+                <i class="fa-regular fa-calendar w-5 text-center"></i> Kalender
+            </button>
+        </nav>
+        <div class="p-4 text-xs text-indigo-300 text-center border-t border-indigo-600/50">
+            <i class="fa-regular fa-circle-check mr-1"></i> Versi 2.1.0 &copy; 2026
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full overflow-y-auto">
+        
+        <!-- Mobile Header -->
+        <header class="md:hidden gradient-bg text-white p-4 flex justify-between items-center shadow-md">
+            <div class="text-xl font-bold"><i class="fa-solid fa-graduation-cap"></i> MyDash</div>
+            <div class="space-x-2">
+                <button onclick="switchTab('dashboard')" class="p-2 bg-white/20 rounded-lg"><i class="fa-solid fa-chart-pie"></i></button>
+                <button onclick="switchTab('schedule')" class="p-2 bg-white/20 rounded-lg"><i class="fa-regular fa-calendar-days"></i></button>
+                <button onclick="switchTab('finance')" class="p-2 bg-white/20 rounded-lg"><i class="fa-solid fa-wallet"></i></button>
+                <button onclick="switchTab('calendar')" class="p-2 bg-white/20 rounded-lg"><i class="fa-regular fa-calendar"></i></button>
+            </div>
+        </header>
+
+        <div class="p-4 md:p-8 flex-1">
+            
+            <!-- SECTION: DASHBOARD -->
+            <section id="view-dashboard" class="space-y-6 fade-in">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-3xl font-bold text-gray-800">📊 Dashboard</h2>
+                    <span class="text-sm text-gray-500"><i class="fa-regular fa-clock mr-1"></i> Update terakhir: hari ini</span>
+                </div>
+
+                <!-- Statistik Cepat -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="stat-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-indigo-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-sm text-gray-500 font-medium mb-1">Total Jadwal</div>
+                                <div id="total-schedule" class="text-2xl font-bold text-gray-800">0</div>
+                            </div>
+                            <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600">
+                                <i class="fa-regular fa-calendar-days text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-blue-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-sm text-gray-500 font-medium mb-1">Total Saldo</div>
+                                <div id="dash-saldo" class="text-2xl font-bold text-gray-800">Rp 0</div>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                                <i class="fa-solid fa-wallet text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-green-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-sm text-gray-500 font-medium mb-1">Total Pemasukan</div>
+                                <div id="dash-pemasukan" class="text-xl font-bold text-green-600">Rp 0</div>
+                            </div>
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600">
+                                <i class="fa-solid fa-arrow-down text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-red-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-sm text-gray-500 font-medium mb-1">Total Pengeluaran</div>
+                                <div id="dash-pengeluaran" class="text-xl font-bold text-red-600">Rp 0</div>
+                            </div>
+                            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-600">
+                                <i class="fa-solid fa-arrow-up text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grafik -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="glass-card rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-700">
+                            <i class="fa-solid fa-chart-bar mr-2 text-indigo-600"></i> Statistik Keuangan
+                        </h3>
+                        <canvas id="financeChart" height="250"></canvas>
+                    </div>
+                    <div class="glass-card rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-700">
+                            <i class="fa-regular fa-calendar mr-2 text-indigo-600"></i> Jadwal per Hari
+                        </h3>
+                        <canvas id="scheduleChart" height="250"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: JADWAL KULIAH -->
+            <section id="view-schedule" class="space-y-6 hide fade-in">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-3xl font-bold text-gray-800">📚 Jadwal Kuliah</h2>
+                    <span class="text-sm text-gray-500"><i class="fa-regular fa-clock mr-1"></i> Total: <span id="schedule-count">0</span> jadwal</span>
+                </div>
+
+                <!-- Form Tambah Jadwal -->
+                <div class="glass-card rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold mb-4 text-indigo-700">
+                        <i class="fa-solid fa-plus-circle mr-2"></i> Tambah Jadwal Baru
+                    </h3>
+                    <form id="form-schedule" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Hari</label>
+                            <select id="sch-day" required class="w-full border-gray-300 rounded-lg p-2.5 bg-gray-50 border focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="Senin">Senin</option>
+                                <option value="Selasa">Selasa</option>
+                                <option value="Rabu">Rabu</option>
+                                <option value="Kamis">Kamis</option>
+                                <option value="Jumat">Jumat</option>
+                                <option value="Sabtu">Sabtu</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Mata Kuliah</label>
+                            <input type="text" id="sch-subject" required placeholder="Contoh: Algoritma" class="w-full border-gray-300 rounded-lg p-2 border bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div class="flex gap-2">
+                            <div class="w-1/2">
+                                <label class="block text-sm font-medium text-gray-600 mb-1">Mulai</label>
+                                <input type="time" id="sch-start" required class="w-full border-gray-300 rounded-lg p-2 border bg-gray-50 focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div class="w-1/2">
+                                <label class="block text-sm font-medium text-gray-600 mb-1">Selesai</label>
+                                <input type="time" id="sch-end" required class="w-full border-gray-300 rounded-lg p-2 border bg-gray-50 focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Ruangan</label>
+                            <input type="text" id="sch-room" placeholder="Contoh: Gedung A Lt 2" class="w-full border-gray-300 rounded-lg p-2 border bg-gray-50 focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Warna Jadwal</label>
+                            <div class="custom-color-container">
+                                <!-- Preset Colors -->
+                                <div class="flex gap-2 flex-wrap">
+                                    <span class="color-picker-option active" style="background:#4f46e5" data-color="#4f46e5" onclick="selectColor(this)"></span>
+                                    <span class="color-picker-option" style="background:#ec4899" data-color="#ec4899" onclick="selectColor(this)"></span>
+                                    <span class="color-picker-option" style="background:#f59e0b" data-color="#f59e0b" onclick="selectColor(this)"></span>
+                                    <span class="color-picker-option" style="background:#10b981" data-color="#10b981" onclick="selectColor(this)"></span>
+                                    <span class="color-picker-option" style="background:#ef4444" data-color="#ef4444" onclick="selectColor(this)"></span>
+                                    <span class="color-picker-option" style="background:#8b5cf6" data-color="#8b5cf6" onclick="selectColor(this)"></span>
+                                    <span class="color-picker-option" style="background:#06b6d4" data-color="#06b6d4" onclick="selectColor(this)"></span>
+                                    <span class="color-picker-option" style="background:#f472b6" data-color="#f472b6" onclick="selectColor(this)"></span>
+                                </div>
+                                <!-- Custom Color Picker dengan Pickr -->
+                                <div class="flex items-center gap-3 ml-2">
+                                    <div id="custom-color-picker" class="pickr-container"></div>
+                                    <span class="text-sm text-gray-500">Custom</span>
+                                    <div id="color-preview" class="color-preview" style="background:#4f46e5"></div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="sch-color" value="#4f46e5">
+                        </div>
+                        <div class="md:col-span-2">
+                            <div class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" id="sch-repeat" class="checkbox-custom">
+                                    <label for="sch-repeat" class="text-sm font-medium text-gray-700">Ulangi Jadwal</label>
+                                </div>
+                                <div id="repeat-options" class="flex items-center gap-3 ml-4">
+                                    <label class="text-sm text-gray-600">Minggu:</label>
+                                    <input type="number" id="sch-repeat-weeks" class="week-input" value="5" min="1" max="52">
+                                    <span class="text-xs text-gray-500">(1-52 minggu, ketik sendiri)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="md:col-span-2 flex justify-end mt-2">
+                            <button type="submit" class="gradient-bg hover:opacity-90 text-white font-medium py-2.5 px-8 rounded-lg transition shadow-md flex items-center gap-2">
+                                <i class="fa-solid fa-plus"></i> Simpan Jadwal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Daftar Jadwal -->
+                <div class="glass-card rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-gray-600">
+                            <thead class="bg-gradient-to-r from-indigo-50 to-purple-50 text-gray-700 font-semibold border-b">
+                                <tr>
+                                    <th class="p-4">Hari</th>
+                                    <th class="p-4">Mata Kuliah</th>
+                                    <th class="p-4">Waktu</th>
+                                    <th class="p-4">Ruangan</th>
+                                    <th class="p-4">Warna</th>
+                                    <th class="p-4 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-schedule" class="divide-y divide-gray-100">
+                                <tr><td colspan="6" class="p-4 text-center text-gray-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Memuat data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: KEUANGAN -->
+            <section id="view-finance" class="space-y-6 hide fade-in">
+                <h2 class="text-3xl font-bold text-gray-800">💰 Keuangan</h2>
+
+                <!-- Kartu Ringkasan -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="stat-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-blue-500">
+                        <div class="text-sm text-gray-500 font-medium mb-1">Total Saldo</div>
+                        <div id="saldo-total" class="text-2xl font-bold text-gray-800">Rp 0</div>
+                    </div>
+                    <div class="stat-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-green-500">
+                        <div class="text-sm text-gray-500 font-medium mb-1">Total Pemasukan</div>
+                        <div id="saldo-pemasukan" class="text-xl font-bold text-green-600">Rp 0</div>
+                    </div>
+                    <div class="stat-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-red-500">
+                        <div class="text-sm text-gray-500 font-medium mb-1">Total Pengeluaran</div>
+                        <div id="saldo-pengeluaran" class="text-xl font-bold text-red-600">Rp 0</div>
+                    </div>
+                </div>
+
+                <!-- Form Tambah Keuangan -->
+                <div class="glass-card rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold mb-4 text-indigo-700">
+                        <i class="fa-solid fa-pen-to-square mr-2"></i> Catat Transaksi
+                    </h3>
+                    <form id="form-finance" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Jenis</label>
+                            <select id="fin-type" required class="w-full border-gray-300 rounded-lg p-2.5 bg-gray-50 border focus:ring-2 focus:ring-indigo-500">
+                                <option value="pengeluaran">Pengeluaran</option>
+                                <option value="pemasukan">Pemasukan</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Nominal (Rp)</label>
+                            <input type="number" id="fin-amount" required placeholder="Contoh: 50000" class="w-full border-gray-300 rounded-lg p-2 border bg-gray-50 focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Keterangan</label>
+                            <input type="text" id="fin-desc" required placeholder="Contoh: Beli makan siang" class="w-full border-gray-300 rounded-lg p-2 border bg-gray-50 focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Tanggal</label>
+                            <input type="date" id="fin-date" required class="w-full border-gray-300 rounded-lg p-2 border bg-gray-50 focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div class="md:col-span-2 flex justify-end mt-2">
+                            <button type="submit" class="gradient-bg hover:opacity-90 text-white font-medium py-2.5 px-8 rounded-lg transition shadow-md flex items-center gap-2">
+                                <i class="fa-solid fa-save"></i> Simpan Transaksi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Riwayat Transaksi -->
+                <div class="glass-card rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-100 font-semibold text-gray-700 flex justify-between items-center">
+                        <span><i class="fa-solid fa-list-ul mr-2"></i> Riwayat Transaksi</span>
+                        <span class="text-sm font-normal text-gray-500" id="transaction-count">0 transaksi</span>
+                    </div>
+                    <ul id="list-finance" class="divide-y divide-gray-100 max-h-80 overflow-y-auto">
+                        <li class="p-4 text-center text-gray-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Memuat data...</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- SECTION: KALENDER -->
+            <section id="view-calendar" class="space-y-6 hide fade-in">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-3xl font-bold text-gray-800">📅 Kalender</h2>
+                    <span class="text-sm text-gray-500"><i class="fa-regular fa-clock mr-1"></i> Semua jadwal</span>
+                </div>
+
+                <div class="glass-card rounded-xl shadow-sm border border-gray-100 p-6">
+                    <div id="calendar-container"></div>
+                </div>
+
+                <div class="glass-card rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold mb-4 text-gray-700">
+                        <i class="fa-regular fa-list mr-2 text-indigo-600"></i> Jadwal yang Dipilih
+                    </h3>
+                    <div id="calendar-events" class="space-y-2">
+                        <p class="text-gray-500 text-center">Pilih tanggal di kalender</p>
+                    </div>
+                </div>
+
+                <!-- Legenda Warna -->
+                <div class="glass-card rounded-xl shadow-sm border border-gray-100 p-4">
+                    <h4 class="text-sm font-semibold text-gray-700 mb-2">🎨 Legenda Warna Jadwal</h4>
+                    <div id="color-legend" class="flex flex-wrap gap-2">
+                        <span class="text-gray-500 text-sm">Memuat...</span>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- JavaScript & Logika Supabase -->
+    <script>
+        // Konfigurasi Supabase
+        var SUPABASE_URL = 'https://tnbvpqpchotveesdxuel.supabase.co';
+        var SUPABASE_KEY = 'sb_publishable_qE8MGS1eB2c4arvLkZjnpw_aQlEo58N';
+        
+        var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Inisialisasi Chart
+        let financeChartInstance = null;
+        let scheduleChartInstance = null;
+
+        // Variabel untuk warna
+        let selectedColor = '#4f46e5';
+        let pickrInstance = null;
+
+        // --- FUNGSI COLOR PICKER ---
+        function selectColor(element) {
+            document.querySelectorAll('.color-picker-option').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+            selectedColor = element.dataset.color;
+            document.getElementById('sch-color').value = selectedColor;
+            document.getElementById('color-preview').style.backgroundColor = selectedColor;
+            
+            // Update Pickr jika ada
+            if (pickrInstance) {
+                pickrInstance.setColor(selectedColor);
+            }
+        }
+
+        // Inisialisasi Pickr Custom Color Picker
+        function initPickr() {
+            const container = document.getElementById('custom-color-picker');
+            
+            pickrInstance = Pickr.create({
+                el: container,
+                theme: 'classic',
+                default: '#4f46e5',
+                components: {
+                    preview: true,
+                    opacity: false,
+                    hue: true,
+                    interaction: {
+                        hex: true,
+                        rgba: false,
+                        hsla: false,
+                        hsva: false,
+                        cmyk: false,
+                        input: true,
+                        clear: false,
+                        save: true
+                    }
+                },
+                strings: {
+                    save: 'Pilih'
+                }
+            });
+
+            pickrInstance.on('save', (color) => {
+                const hexColor = color.toHEXA().toString();
+                selectedColor = hexColor;
+                document.getElementById('sch-color').value = hexColor;
+                document.getElementById('color-preview').style.backgroundColor = hexColor;
+                
+                // Non-aktifkan preset colors
+                document.querySelectorAll('.color-picker-option').forEach(el => el.classList.remove('active'));
+                
+                pickrInstance.hide();
+            });
+
+            pickrInstance.on('change', (color) => {
+                const hexColor = color.toHEXA().toString();
+                document.getElementById('color-preview').style.backgroundColor = hexColor;
+            });
+        }
+
+        // --- SISTEM TAB (Navigasi) ---
+        function switchTab(tabName) {
+            document.querySelectorAll('[id^="view-"]').forEach(el => el.classList.add('hide'));
+            
+            document.querySelectorAll('[id^="btn-"]').forEach(el => {
+                el.classList.remove('bg-indigo-600/50', 'bg-indigo-600');
+            });
+
+            if (tabName === 'dashboard') {
+                document.getElementById('view-dashboard').classList.remove('hide');
+                document.getElementById('btn-dashboard').classList.add('bg-indigo-600/50');
+            } else if (tabName === 'schedule') {
+                document.getElementById('view-schedule').classList.remove('hide');
+                document.getElementById('btn-schedule').classList.add('bg-indigo-600/50');
+            } else if (tabName === 'finance') {
+                document.getElementById('view-finance').classList.remove('hide');
+                document.getElementById('btn-finance').classList.add('bg-indigo-600/50');
+            } else if (tabName === 'calendar') {
+                document.getElementById('view-calendar').classList.remove('hide');
+                document.getElementById('btn-calendar').classList.add('bg-indigo-600/50');
+                if (calendarInstance) {
+                    loadSchedulesForCalendar();
+                }
+            }
+        }
+
+        // Format Rupiah
+        const formatRupiah = (angka) => {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+        };
+
+        // Format Tanggal
+        const formatDate = (dateStr) => {
+            const options = { day: 'numeric', month: 'short', year: 'numeric' };
+            return new Date(dateStr).toLocaleDateString('id-ID', options);
+        };
+
+        // Mendapatkan tanggal untuk hari tertentu di minggu ini
+        function getDateForDay(dayName) {
+            const days = { 'Senin': 1, 'Selasa': 2, 'Rabu': 3, 'Kamis': 4, 'Jumat': 5, 'Sabtu': 6 };
+            const today = new Date();
+            const currentDay = today.getDay(); // 0=minggu
+            const targetDay = days[dayName];
+            
+            if (!targetDay) return null;
+            
+            const jsDay = targetDay === 6 ? 6 : targetDay;
+            const diff = jsDay - (currentDay === 0 ? 7 : currentDay);
+            const date = new Date(today);
+            date.setDate(date.getDate() + diff);
+            return date;
+        }
+
+        // ==========================================
+        // FITUR JADWAL KULIAH
+        // ==========================================
+
+        const loadSchedules = async () => {
+            const { data, error } = await supabaseClient
+                .from('schedules')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            const tbody = document.getElementById('table-schedule');
+            tbody.innerHTML = '';
+
+            if (error) {
+                console.error(error);
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500">❌ Gagal memuat jadwal</td></tr>`;
+                return;
+            }
+
+            document.getElementById('schedule-count').textContent = data.length;
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-500">📭 Belum ada jadwal. Silakan tambahkan.</td></tr>`;
+                return;
+            }
+
+            const hariUrutan = { 'Senin': 1, 'Selasa': 2, 'Rabu': 3, 'Kamis': 4, 'Jumat': 5, 'Sabtu': 6 };
+            const sortedData = data.sort((a, b) => hariUrutan[a.day] - hariUrutan[b.day]);
+
+            sortedData.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "schedule-item hover:bg-gray-50 transition";
+                
+                const color = item.color || '#4f46e5';
+                const isRepeat = item.is_repeat || false;
+                
+                tr.innerHTML = `
+                    <td class="p-4 font-medium text-gray-800">${item.day} ${isRepeat ? '<span class="repeat-badge"><i class="fa-solid fa-rotate mr-1"></i>Ulang</span>' : ''}</td>
+                    <td class="p-4">${item.subject}</td>
+                    <td class="p-4"><span class="bg-indigo-100 text-indigo-800 text-xs px-3 py-1.5 rounded-full font-medium">${item.time_start.substring(0,5)} - ${item.time_end.substring(0,5)}</span></td>
+                    <td class="p-4">${item.room || '-'}</td>
+                    <td class="p-4"><span class="inline-block w-6 h-6 rounded-full" style="background:${color}"></span></td>
+                    <td class="p-4 text-center">
+                        <button onclick="deleteSchedule(${item.id})" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('total-schedule').textContent = data.length;
+            
+            if (window.calendarInstance) {
+                loadSchedulesForCalendar();
+            }
+        };
+
+        document.getElementById('form-schedule').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...`;
+            btn.disabled = true;
+
+            const day = document.getElementById('sch-day').value;
+            const subject = document.getElementById('sch-subject').value;
+            const time_start = document.getElementById('sch-start').value;
+            const time_end = document.getElementById('sch-end').value;
+            const room = document.getElementById('sch-room').value;
+            const color = document.getElementById('sch-color').value;
+            const isRepeat = document.getElementById('sch-repeat').checked;
+            const repeatWeeks = parseInt(document.getElementById('sch-repeat-weeks').value) || 5;
+
+            // Validasi input minggu
+            if (isRepeat && (isNaN(repeatWeeks) || repeatWeeks < 1 || repeatWeeks > 52)) {
+                alert('❌ Jumlah minggu harus antara 1-52');
+                btn.innerHTML = `<i class="fa-solid fa-plus"></i> Simpan Jadwal`;
+                btn.disabled = false;
+                return;
+            }
+
+            try {
+                let schedulesToInsert = [];
+
+                if (isRepeat) {
+                    const baseDate = getDateForDay(day);
+                    if (!baseDate) {
+                        alert('❌ Hari tidak valid');
+                        btn.innerHTML = `<i class="fa-solid fa-plus"></i> Simpan Jadwal`;
+                        btn.disabled = false;
+                        return;
+                    }
+
+                    for (let week = 0; week < repeatWeeks; week++) {
+                        const date = new Date(baseDate);
+                        date.setDate(date.getDate() + (week * 7));
+                        
+                        // Skip jika tanggal sudah lewat
+                        if (date < new Date()) {
+                            continue;
+                        }
+
+                        schedulesToInsert.push({
+                            day: day,
+                            subject: subject,
+                            time_start: time_start,
+                            time_end: time_end,
+                            room: room,
+                            color: color,
+                            is_repeat: true,
+                            repeat_week: week + 1,
+                            schedule_date: date.toISOString().split('T')[0]
+                        });
+                    }
+                } else {
+                    schedulesToInsert.push({
+                        day: day,
+                        subject: subject,
+                        time_start: time_start,
+                        time_end: time_end,
+                        room: room,
+                        color: color,
+                        is_repeat: false,
+                        repeat_week: null,
+                        schedule_date: null
+                    });
+                }
+
+                if (schedulesToInsert.length === 0) {
+                    alert('⚠️ Tidak ada jadwal yang dibuat (semua tanggal sudah lewat)');
+                    btn.innerHTML = `<i class="fa-solid fa-plus"></i> Simpan Jadwal`;
+                    btn.disabled = false;
+                    return;
+                }
+
+                const { error } = await supabaseClient.from('schedules').insert(schedulesToInsert);
+                
+                if (!error) {
+                    document.getElementById('form-schedule').reset();
+                    document.getElementById('sch-repeat').checked = false;
+                    document.getElementById('repeat-options').style.display = 'none';
+                    
+                    // Reset color ke default
+                    document.querySelectorAll('.color-picker-option').forEach(el => el.classList.remove('active'));
+                    document.querySelector('.color-picker-option').classList.add('active');
+                    document.getElementById('sch-color').value = '#4f46e5';
+                    selectedColor = '#4f46e5';
+                    document.getElementById('color-preview').style.backgroundColor = '#4f46e5';
+                    if (pickrInstance) {
+                        pickrInstance.setColor('#4f46e5');
+                    }
+                    
+                    loadSchedules();
+                    updateCharts();
+                    showNotification(`✅ ${schedulesToInsert.length} jadwal berhasil ditambahkan!`);
+                } else {
+                    alert('❌ Gagal menyimpan jadwal: ' + error.message);
+                }
+            } catch (err) {
+                alert('❌ Error: ' + err.message);
+            }
+
+            btn.innerHTML = `<i class="fa-solid fa-plus"></i> Simpan Jadwal`;
+            btn.disabled = false;
+        });
+
+        document.getElementById('sch-repeat').addEventListener('change', function() {
+            document.getElementById('repeat-options').style.display = this.checked ? 'flex' : 'none';
+        });
+
+        window.deleteSchedule = async (id) => {
+            if(confirm('Yakin ingin menghapus jadwal ini?')) {
+                const { error } = await supabaseClient.from('schedules').delete().eq('id', id);
+                if (!error) {
+                    loadSchedules();
+                    updateCharts();
+                    showNotification('🗑️ Jadwal berhasil dihapus');
+                } else {
+                    alert('❌ Gagal menghapus: ' + error.message);
+                }
+            }
+        };
+
+        // ==========================================
+        // FITUR KEUANGAN
+        // ==========================================
+
+        document.getElementById('fin-date').valueAsDate = new Date();
+
+        const loadFinances = async () => {
+            const { data, error } = await supabaseClient
+                .from('finances')
+                .select('*')
+                .order('transaction_date', { ascending: false })
+                .order('created_at', { ascending: false });
+
+            const list = document.getElementById('list-finance');
+            list.innerHTML = '';
+
+            let totalPemasukan = 0;
+            let totalPengeluaran = 0;
+
+            if (error) {
+                console.error(error);
+                list.innerHTML = `<li class="p-4 text-center text-red-500">❌ Gagal memuat keuangan</li>`;
+                return;
+            }
+
+            document.getElementById('transaction-count').textContent = data.length + ' transaksi';
+
+            if (data.length === 0) {
+                list.innerHTML = `<li class="p-4 text-center text-gray-500">📭 Belum ada riwayat transaksi.</li>`;
+            } else {
+                data.forEach(item => {
+                    if (item.type === 'pemasukan') totalPemasukan += Number(item.amount);
+                    if (item.type === 'pengeluaran') totalPengeluaran += Number(item.amount);
+
+                    const li = document.createElement('li');
+                    li.className = "p-4 flex justify-between items-center hover:bg-gray-50 transition";
+                    
+                    const iconColor = item.type === 'pemasukan' ? 'text-green-500 bg-green-100' : 'text-red-500 bg-red-100';
+                    const icon = item.type === 'pemasukan' ? 'fa-arrow-down' : 'fa-arrow-up';
+                    const sign = item.type === 'pemasukan' ? '+' : '-';
+                    const amountColor = item.type === 'pemasukan' ? 'text-green-600' : 'text-gray-800';
+
+                    li.innerHTML = `
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center ${iconColor}">
+                                <i class="fa-solid ${icon}"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-800">${item.description}</div>
+                                <div class="text-xs text-gray-500">${formatDate(item.transaction_date)}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="font-bold ${amountColor}">${sign} ${formatRupiah(item.amount)}</div>
+                            <button onclick="deleteFinance(${item.id})" class="text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    `;
+                    list.appendChild(li);
+                });
+            }
+
+            const totalSaldo = totalPemasukan - totalPengeluaran;
+            document.getElementById('saldo-pemasukan').innerText = formatRupiah(totalPemasukan);
+            document.getElementById('saldo-pengeluaran').innerText = formatRupiah(totalPengeluaran);
+            document.getElementById('saldo-total').innerText = formatRupiah(totalSaldo);
+
+            document.getElementById('dash-saldo').innerText = formatRupiah(totalSaldo);
+            document.getElementById('dash-pemasukan').innerText = formatRupiah(totalPemasukan);
+            document.getElementById('dash-pengeluaran').innerText = formatRupiah(totalPengeluaran);
+        };
+
+        document.getElementById('form-finance').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...`;
+            btn.disabled = true;
+
+            const payload = {
+                type: document.getElementById('fin-type').value,
+                amount: document.getElementById('fin-amount').value,
+                description: document.getElementById('fin-desc').value,
+                transaction_date: document.getElementById('fin-date').value
+            };
+
+            const { error } = await supabaseClient.from('finances').insert([payload]);
+            if (!error) {
+                document.getElementById('form-finance').reset();
+                document.getElementById('fin-date').valueAsDate = new Date();
+                loadFinances();
+                updateCharts();
+                showNotification('✅ Transaksi berhasil disimpan!');
+            } else {
+                alert('❌ Gagal menyimpan transaksi: ' + error.message);
+            }
+
+            btn.innerHTML = `<i class="fa-solid fa-save"></i> Simpan Transaksi`;
+            btn.disabled = false;
+        });
+
+        window.deleteFinance = async (id) => {
+            if(confirm('Hapus transaksi ini?')) {
+                await supabaseClient.from('finances').delete().eq('id', id);
+                loadFinances();
+                updateCharts();
+                showNotification('🗑️ Transaksi berhasil dihapus');
+            }
+        };
+
+        // ==========================================
+        // GRAFIK (Chart.js)
+        // ==========================================
+
+        const updateCharts = async () => {
+            const { data: financeData } = await supabaseClient.from('finances').select('*');
+            const { data: scheduleData } = await supabaseClient.from('schedules').select('*');
+
+            const ctx1 = document.getElementById('financeChart').getContext('2d');
+            if (financeChartInstance) financeChartInstance.destroy();
+
+            const pemasukan = financeData?.filter(f => f.type === 'pemasukan').reduce((sum, f) => sum + Number(f.amount), 0) || 0;
+            const pengeluaran = financeData?.filter(f => f.type === 'pengeluaran').reduce((sum, f) => sum + Number(f.amount), 0) || 0;
+
+            financeChartInstance = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['Pemasukan', 'Pengeluaran'],
+                    datasets: [{
+                        label: 'Nominal (Rp)',
+                        data: [pemasukan, pengeluaran],
+                        backgroundColor: ['#34d399', '#f87171'],
+                        borderColor: ['#059669', '#dc2626'],
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'Rp ' + value.toLocaleString('id-ID');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const ctx2 = document.getElementById('scheduleChart').getContext('2d');
+            if (scheduleChartInstance) scheduleChartInstance.destroy();
+
+            const hariCount = {};
+            const hariList = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            hariList.forEach(h => hariCount[h] = 0);
+            scheduleData?.forEach(s => {
+                if (hariCount[s.day] !== undefined) hariCount[s.day]++;
+            });
+
+            const colors = ['#818cf8', '#6366f1', '#4f46e5', '#4338ca', '#3730a3', '#312e81'];
+
+            scheduleChartInstance = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: hariList,
+                    datasets: [{
+                        label: 'Jumlah Jadwal',
+                        data: hariList.map(h => hariCount[h]),
+                        backgroundColor: colors.map(c => c + '88'),
+                        borderColor: colors,
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }
+                        }
+                    }
+                }
+            });
+        };
+
+        // ==========================================
+        // KALENDER (Flatpickr)
+        // ==========================================
+
+        let calendarInstance = null;
+        let allSchedules = [];
+        let scheduleColors = {};
+
+        const initCalendar = () => {
+            const container = document.getElementById('calendar-container');
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.id = 'calendar-input';
+            input.className = 'w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500';
+            input.placeholder = 'Pilih tanggal...';
+            container.appendChild(input);
+
+            calendarInstance = flatpickr(input, {
+                inline: true,
+                dateFormat: 'Y-m-d',
+                onChange: function(selectedDates, dateStr) {
+                    showEventsForDate(dateStr);
+                }
+            });
+
+            loadSchedulesForCalendar();
+        };
+
+        const loadSchedulesForCalendar = async () => {
+            const { data } = await supabaseClient.from('schedules').select('*');
+            allSchedules = data || [];
+            
+            scheduleColors = {};
+            allSchedules.forEach(s => {
+                if (s.color) {
+                    scheduleColors[s.color] = (scheduleColors[s.color] || 0) + 1;
+                }
+            });
+
+            updateColorLegend();
+
+            if (calendarInstance) {
+                const dateEvents = {};
+                allSchedules.forEach(s => {
+                    if (s.schedule_date) {
+                        if (!dateEvents[s.schedule_date]) {
+                            dateEvents[s.schedule_date] = [];
+                        }
+                        dateEvents[s.schedule_date].push(s);
+                    }
+                });
+
+                calendarInstance.set('onDayCreate', function(dObj, dStr, fp, dayElem) {
+                    const dateStr = dayElem.dateObj.toISOString().split('T')[0];
+                    const events = dateEvents[dateStr] || [];
+                    
+                    dayElem.classList.remove('has-event');
+                    dayElem.style.position = 'relative';
+                    
+                    // Hapus dot lama
+                    const oldDot = dayElem.querySelector('.event-dot');
+                    if (oldDot) oldDot.remove();
+                    
+                    if (events.length > 0) {
+                        dayElem.classList.add('has-event');
+                        const color = events[0].color || '#4f46e5';
+                        dayElem.style.color = color;
+                        dayElem.style.fontWeight = 'bold';
+                        
+                        const dot = document.createElement('span');
+                        dot.className = 'event-dot';
+                        dot.style.cssText = `
+                            position: absolute;
+                            bottom: 2px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            width: 6px;
+                            height: 6px;
+                            border-radius: 50%;
+                            background: ${color};
+                        `;
+                        dayElem.appendChild(dot);
+                    }
+                });
+                
+                calendarInstance.redraw();
+            }
+        };
+
+        const updateColorLegend = () => {
+            const container = document.getElementById('color-legend');
+            const colors = Object.keys(scheduleColors);
+            
+            if (colors.length === 0) {
+                container.innerHTML = '<span class="text-gray-500 text-sm">Belum ada warna yang digunakan</span>';
+                return;
+            }
+
+            container.innerHTML = colors.map(color => `
+                <div class="color-legend-item">
+                    <span class="inline-block w-4 h-4 rounded-full" style="background:${color}"></span>
+                    <span class="text-sm text-gray-600">${color} (${scheduleColors[color]})</span>
+                </div>
+            `).join('');
+        };
+
+        const showEventsForDate = (dateStr) => {
+            const container = document.getElementById('calendar-events');
+            
+            const events = allSchedules.filter(s => s.schedule_date === dateStr);
+            
+            if (events.length === 0) {
+                container.innerHTML = `<p class="text-gray-500 text-center py-4">📭 Tidak ada jadwal pada tanggal ini</p>`;
+                return;
+            }
+
+            let html = `<div class="space-y-2">`;
+            events.forEach(e => {
+                const color = e.color || '#4f46e5';
+                html += `
+                    <div class="flex items-center justify-between p-3 rounded-lg border" style="border-left: 4px solid ${color}; background: ${color}10;">
+                        <div>
+                            <div class="font-medium text-gray-800">${e.subject}</div>
+                            <div class="text-sm text-gray-500">⏰ ${e.time_start.substring(0,5)} - ${e.time_end.substring(0,5)}</div>
+                            <div class="text-sm text-gray-500">🏛️ ${e.room || 'Tidak ada ruangan'}</div>
+                            ${e.is_repeat ? `<span class="text-xs text-yellow-600"><i class="fa-solid fa-rotate mr-1"></i>Minggu ke-${e.repeat_week}</span>` : ''}
+                        </div>
+                        <span class="inline-block w-6 h-6 rounded-full" style="background:${color}"></span>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+            container.innerHTML = html;
+        };
+
+        const updateCalendar = async () => {
+            await loadSchedulesForCalendar();
+            if (calendarInstance) {
+                calendarInstance.redraw();
+            }
+        };
+
+        // ==========================================
+        // NOTIFIKASI
+        // ==========================================
+
+        const showNotification = (message) => {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-white rounded-lg shadow-2xl border border-gray-100 p-4 z-50 fade-in max-w-sm';
+            notification.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600">
+                        <i class="fa-solid fa-check-circle text-xl"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium text-gray-800">${message}</div>
+                        <div class="text-xs text-gray-500">Baru saja</div>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        };
+
+        // ==========================================
+        // INISIALISASI
+        // ==========================================
+
+        document.getElementById('repeat-options').style.display = 'none';
+
+        window.onload = () => {
+            loadSchedules();
+            loadFinances();
+            initCalendar();
+            initPickr();
+            
+            setTimeout(() => {
+                updateCharts();
+            }, 500);
+
+            switchTab('dashboard');
+            document.getElementById('btn-dashboard').classList.add('bg-indigo-600/50');
+        };
+
+        window.addEventListener('resize', () => {
+            if (financeChartInstance) financeChartInstance.resize();
+            if (scheduleChartInstance) scheduleChartInstance.resize();
+        });
+    </script>
+</body>
+</html>
