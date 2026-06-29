@@ -47,17 +47,31 @@
         }
         .flatpickr-calendar {
             z-index: 1000 !important;
+            width: 100% !important;
+        }
+        .flatpickr-innerContainer {
+            width: 100% !important;
+        }
+        .flatpickr-rContainer {
+            width: 100% !important;
+        }
+        .flatpickr-days {
+            width: 100% !important;
+        }
+        .dayContainer {
+            width: 100% !important;
+            min-width: 100% !important;
+            max-width: 100% !important;
+        }
+        .flatpickr-day {
+            max-width: 14.28% !important;
+            width: 14.28% !important;
+            height: 45px !important;
+            line-height: 45px !important;
+            font-size: 14px !important;
         }
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .notification-badge {
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
         }
         ::-webkit-scrollbar {
             width: 6px;
@@ -96,24 +110,18 @@
             border-color: #4f46e5;
             box-shadow: 0 0 0 2px #fff, 0 0 0 4px #4f46e5;
         }
-        .calendar-event-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 4px;
-        }
         .flatpickr-day.has-event {
             position: relative;
+            font-weight: bold;
         }
         .flatpickr-day.has-event::after {
             content: '';
             position: absolute;
-            bottom: 2px;
+            bottom: 4px;
             left: 50%;
             transform: translateX(-50%);
-            width: 4px;
-            height: 4px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             background: currentColor;
         }
@@ -179,7 +187,7 @@
         .week-input::-webkit-inner-spin-button {
             opacity: 1;
         }
-        .color-legend-item {
+        .legend-item {
             display: flex;
             align-items: center;
             gap: 8px;
@@ -188,10 +196,45 @@
             border-radius: 20px;
             border: 1px solid #e5e7eb;
             transition: all 0.2s;
+            cursor: pointer;
         }
-        .color-legend-item:hover {
+        .legend-item:hover {
             transform: scale(1.05);
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .btn-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .calendar-event-item {
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .calendar-event-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .flatpickr-day.selected {
+            background: #4f46e5 !important;
+            border-color: #4f46e5 !important;
+        }
+        .flatpickr-day.today {
+            border-color: #4f46e5 !important;
+        }
+        .flatpickr-day:hover {
+            background: #e0e7ff !important;
+        }
+        .calendar-header-title {
+            font-size: 18px !important;
+            font-weight: 600 !important;
+            color: #1f2937 !important;
+        }
+        .flatpickr-month {
+            height: 50px !important;
+        }
+        .flatpickr-weekday {
+            font-weight: 600 !important;
+            color: #4f46e5 !important;
         }
     </style>
 </head>
@@ -357,7 +400,6 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Warna Jadwal</label>
                             <div class="custom-color-container">
-                                <!-- Preset Colors -->
                                 <div class="flex gap-2 flex-wrap">
                                     <span class="color-picker-option active" style="background:#4f46e5" data-color="#4f46e5" onclick="selectColor(this)"></span>
                                     <span class="color-picker-option" style="background:#ec4899" data-color="#ec4899" onclick="selectColor(this)"></span>
@@ -368,7 +410,6 @@
                                     <span class="color-picker-option" style="background:#06b6d4" data-color="#06b6d4" onclick="selectColor(this)"></span>
                                     <span class="color-picker-option" style="background:#f472b6" data-color="#f472b6" onclick="selectColor(this)"></span>
                                 </div>
-                                <!-- Custom Color Picker dengan Pickr -->
                                 <div class="flex items-center gap-3 ml-2">
                                     <div id="custom-color-picker" class="pickr-container"></div>
                                     <span class="text-sm text-gray-500">Custom</span>
@@ -391,7 +432,7 @@
                             </div>
                         </div>
                         <div class="md:col-span-2 flex justify-end mt-2">
-                            <button type="submit" class="gradient-bg hover:opacity-90 text-white font-medium py-2.5 px-8 rounded-lg transition shadow-md flex items-center gap-2">
+                            <button type="submit" id="btn-submit-schedule" class="gradient-bg hover:opacity-90 text-white font-medium py-2.5 px-8 rounded-lg transition shadow-md flex items-center gap-2">
                                 <i class="fa-solid fa-plus"></i> Simpan Jadwal
                             </button>
                         </div>
@@ -424,7 +465,6 @@
             <section id="view-finance" class="space-y-6 hide fade-in">
                 <h2 class="text-3xl font-bold text-gray-800">💰 Keuangan</h2>
 
-                <!-- Kartu Ringkasan -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="stat-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-blue-500">
                         <div class="text-sm text-gray-500 font-medium mb-1">Total Saldo</div>
@@ -440,7 +480,6 @@
                     </div>
                 </div>
 
-                <!-- Form Tambah Keuangan -->
                 <div class="glass-card rounded-xl shadow-sm border border-gray-100 p-6">
                     <h3 class="text-lg font-semibold mb-4 text-indigo-700">
                         <i class="fa-solid fa-pen-to-square mr-2"></i> Catat Transaksi
@@ -473,7 +512,6 @@
                     </form>
                 </div>
 
-                <!-- Riwayat Transaksi -->
                 <div class="glass-card rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-100 font-semibold text-gray-700 flex justify-between items-center">
                         <span><i class="fa-solid fa-list-ul mr-2"></i> Riwayat Transaksi</span>
@@ -488,26 +526,105 @@
             <!-- SECTION: KALENDER -->
             <section id="view-calendar" class="space-y-6 hide fade-in">
                 <div class="flex justify-between items-center">
-                    <h2 class="text-3xl font-bold text-gray-800">📅 Kalender</h2>
-                    <span class="text-sm text-gray-500"><i class="fa-regular fa-clock mr-1"></i> Semua jadwal</span>
+                    <h2 class="text-3xl font-bold text-gray-800">📅 Kalender Global</h2>
+                    <span class="text-sm text-gray-500"><i class="fa-regular fa-clock mr-1"></i> Klik tanggal untuk melihat jadwal</span>
                 </div>
 
+                <!-- Kalender -->
                 <div class="glass-card rounded-xl shadow-sm border border-gray-100 p-6">
                     <div id="calendar-container"></div>
                 </div>
 
+                <!-- Tombol Tambah Jadwal dari Kalender -->
+                <div class="glass-card rounded-xl shadow-sm border border-gray-100 p-4">
+                    <div class="flex items-center justify-between flex-wrap gap-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-700">
+                                <i class="fa-solid fa-plus-circle mr-2 text-indigo-600"></i> Tambah Jadwal dari Tanggal
+                            </h3>
+                            <p class="text-sm text-gray-500 mt-1">Pilih tanggal di kalender, lalu tambahkan jadwal</p>
+                        </div>
+                        <button onclick="openCalendarAddForm()" class="gradient-bg hover:opacity-90 text-white font-medium py-2 px-6 rounded-lg transition shadow-md flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-plus"></i> Tambah di Tanggal Ini
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Form Tambah Jadwal dari Kalender -->
+                <div id="calendar-add-form" class="glass-card rounded-xl shadow-sm border border-gray-100 p-6 hide">
+                    <h3 class="text-lg font-semibold mb-4 text-indigo-700">
+                        <i class="fa-solid fa-calendar-day mr-2"></i> Tambah Jadwal untuk Tanggal: <span id="calendar-selected-date" class="text-gray-800"></span>
+                    </h3>
+                    <form id="form-calendar-schedule" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Hari</label>
+                            <select id="cal-sch-day" required class="w-full border-gray-300 rounded-lg p-2.5 bg-gray-50 border focus:ring-2 focus:ring-indigo-500">
+                                <option value="Senin">Senin</option>
+                                <option value="Selasa">Selasa</option>
+                                <option value="Rabu">Rabu</option>
+                                <option value="Kamis">Kamis</option>
+                                <option value="Jumat">Jumat</option>
+                                <option value="Sabtu">Sabtu</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Mata Kuliah</label>
+                            <input type="text" id="cal-sch-subject" required placeholder="Contoh: Algoritma" class="w-full border-gray-300 rounded-lg p-2 border bg-gray-50 focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div class="flex gap-2">
+                            <div class="w-1/2">
+                                <label class="block text-sm font-medium text-gray-600 mb-1">Mulai</label>
+                                <input type="time" id="cal-sch-start" required class="w-full border-gray-300 rounded-lg p-2 border bg-gray-50 focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div class="w-1/2">
+                                <label class="block text-sm font-medium text-gray-600 mb-1">Selesai</label>
+                                <input type="time" id="cal-sch-end" required class="w-full border-gray-300 rounded-lg p-2 border bg-gray-50 focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Ruangan</label>
+                            <input type="text" id="cal-sch-room" placeholder="Contoh: Gedung A Lt 2" class="w-full border-gray-300 rounded-lg p-2 border bg-gray-50 focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Warna</label>
+                            <div class="custom-color-container">
+                                <div class="flex gap-2 flex-wrap">
+                                    <span class="color-picker-option active" style="background:#4f46e5" data-color="#4f46e5" onclick="selectCalendarColor(this)"></span>
+                                    <span class="color-picker-option" style="background:#ec4899" data-color="#ec4899" onclick="selectCalendarColor(this)"></span>
+                                    <span class="color-picker-option" style="background:#f59e0b" data-color="#f59e0b" onclick="selectCalendarColor(this)"></span>
+                                    <span class="color-picker-option" style="background:#10b981" data-color="#10b981" onclick="selectCalendarColor(this)"></span>
+                                    <span class="color-picker-option" style="background:#ef4444" data-color="#ef4444" onclick="selectCalendarColor(this)"></span>
+                                    <span class="color-picker-option" style="background:#8b5cf6" data-color="#8b5cf6" onclick="selectCalendarColor(this)"></span>
+                                    <span class="color-picker-option" style="background:#06b6d4" data-color="#06b6d4" onclick="selectCalendarColor(this)"></span>
+                                    <span class="color-picker-option" style="background:#f472b6" data-color="#f472b6" onclick="selectCalendarColor(this)"></span>
+                                </div>
+                            </div>
+                            <input type="hidden" id="cal-sch-color" value="#4f46e5">
+                        </div>
+                        <div class="md:col-span-2 flex justify-end mt-2 gap-2">
+                            <button type="button" onclick="closeCalendarAddForm()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2.5 px-6 rounded-lg transition">
+                                Batal
+                            </button>
+                            <button type="submit" class="gradient-bg hover:opacity-90 text-white font-medium py-2.5 px-8 rounded-lg transition shadow-md flex items-center gap-2">
+                                <i class="fa-solid fa-save"></i> Simpan Jadwal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Jadwal yang Dipilih -->
                 <div class="glass-card rounded-xl shadow-sm border border-gray-100 p-6">
                     <h3 class="text-lg font-semibold mb-4 text-gray-700">
-                        <i class="fa-regular fa-list mr-2 text-indigo-600"></i> Jadwal yang Dipilih
+                        <i class="fa-regular fa-list mr-2 text-indigo-600"></i> Jadwal pada Tanggal yang Dipilih
                     </h3>
                     <div id="calendar-events" class="space-y-2">
-                        <p class="text-gray-500 text-center">Pilih tanggal di kalender</p>
+                        <p class="text-gray-500 text-center py-4">📭 Pilih tanggal di kalender untuk melihat jadwal</p>
                     </div>
                 </div>
 
                 <!-- Legenda Warna -->
                 <div class="glass-card rounded-xl shadow-sm border border-gray-100 p-4">
-                    <h4 class="text-sm font-semibold text-gray-700 mb-2">🎨 Legenda Warna Jadwal</h4>
+                    <h4 class="text-sm font-semibold text-gray-700 mb-3">🎨 Legenda Warna & Mata Kuliah</h4>
                     <div id="color-legend" class="flex flex-wrap gap-2">
                         <span class="text-gray-500 text-sm">Memuat...</span>
                     </div>
@@ -523,7 +640,13 @@
         var SUPABASE_URL = 'https://tnbvpqpchotveesdxuel.supabase.co';
         var SUPABASE_KEY = 'sb_publishable_qE8MGS1eB2c4arvLkZjnpw_aQlEo58N';
         
-        var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        var supabaseClient = null;
+        try {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            console.log('✅ Supabase connected successfully');
+        } catch (err) {
+            console.error('❌ Failed to connect to Supabase:', err);
+        }
 
         // Inisialisasi Chart
         let financeChartInstance = null;
@@ -531,72 +654,80 @@
 
         // Variabel untuk warna
         let selectedColor = '#4f46e5';
+        let selectedCalendarColor = '#4f46e5';
         let pickrInstance = null;
+        let selectedDate = null;
+        let calendarInstance = null;
+        let allSchedules = [];
 
         // --- FUNGSI COLOR PICKER ---
         function selectColor(element) {
-            document.querySelectorAll('.color-picker-option').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('#view-schedule .color-picker-option').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
             selectedColor = element.dataset.color;
             document.getElementById('sch-color').value = selectedColor;
             document.getElementById('color-preview').style.backgroundColor = selectedColor;
-            
-            // Update Pickr jika ada
             if (pickrInstance) {
                 pickrInstance.setColor(selectedColor);
             }
         }
 
-        // Inisialisasi Pickr Custom Color Picker
-        function initPickr() {
-            const container = document.getElementById('custom-color-picker');
-            
-            pickrInstance = Pickr.create({
-                el: container,
-                theme: 'classic',
-                default: '#4f46e5',
-                components: {
-                    preview: true,
-                    opacity: false,
-                    hue: true,
-                    interaction: {
-                        hex: true,
-                        rgba: false,
-                        hsla: false,
-                        hsva: false,
-                        cmyk: false,
-                        input: true,
-                        clear: false,
-                        save: true
-                    }
-                },
-                strings: {
-                    save: 'Pilih'
-                }
-            });
-
-            pickrInstance.on('save', (color) => {
-                const hexColor = color.toHEXA().toString();
-                selectedColor = hexColor;
-                document.getElementById('sch-color').value = hexColor;
-                document.getElementById('color-preview').style.backgroundColor = hexColor;
-                
-                // Non-aktifkan preset colors
-                document.querySelectorAll('.color-picker-option').forEach(el => el.classList.remove('active'));
-                
-                pickrInstance.hide();
-            });
-
-            pickrInstance.on('change', (color) => {
-                const hexColor = color.toHEXA().toString();
-                document.getElementById('color-preview').style.backgroundColor = hexColor;
-            });
+        function selectCalendarColor(element) {
+            document.querySelectorAll('#calendar-add-form .color-picker-option').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+            selectedCalendarColor = element.dataset.color;
+            document.getElementById('cal-sch-color').value = selectedCalendarColor;
         }
 
-        // --- SISTEM TAB (Navigasi) ---
+        // Inisialisasi Pickr
+        function initPickr() {
+            try {
+                const container = document.getElementById('custom-color-picker');
+                if (!container) return;
+                
+                pickrInstance = Pickr.create({
+                    el: container,
+                    theme: 'classic',
+                    default: '#4f46e5',
+                    components: {
+                        preview: true,
+                        opacity: false,
+                        hue: true,
+                        interaction: {
+                            hex: true,
+                            rgba: false,
+                            hsla: false,
+                            hsva: false,
+                            cmyk: false,
+                            input: true,
+                            clear: false,
+                            save: true
+                        }
+                    },
+                    strings: { save: 'Pilih' }
+                });
+
+                pickrInstance.on('save', (color) => {
+                    const hexColor = color.toHEXA().toString();
+                    selectedColor = hexColor;
+                    document.getElementById('sch-color').value = hexColor;
+                    document.getElementById('color-preview').style.backgroundColor = hexColor;
+                    document.querySelectorAll('#view-schedule .color-picker-option').forEach(el => el.classList.remove('active'));
+                    pickrInstance.hide();
+                });
+
+                pickrInstance.on('change', (color) => {
+                    const hexColor = color.toHEXA().toString();
+                    document.getElementById('color-preview').style.backgroundColor = hexColor;
+                });
+            } catch (err) {
+                console.error('❌ Failed to initialize Pickr:', err);
+            }
+        }
+
+        // --- SISTEM TAB ---
         function switchTab(tabName) {
             document.querySelectorAll('[id^="view-"]').forEach(el => el.classList.add('hide'));
-            
             document.querySelectorAll('[id^="btn-"]').forEach(el => {
                 el.classList.remove('bg-indigo-600/50', 'bg-indigo-600');
             });
@@ -630,15 +761,13 @@
             return new Date(dateStr).toLocaleDateString('id-ID', options);
         };
 
-        // Mendapatkan tanggal untuk hari tertentu di minggu ini
-        function getDateForDay(dayName) {
+        // Mendapatkan tanggal untuk hari tertentu
+        function getDateForDay(dayName, fromDate = null) {
             const days = { 'Senin': 1, 'Selasa': 2, 'Rabu': 3, 'Kamis': 4, 'Jumat': 5, 'Sabtu': 6 };
-            const today = new Date();
-            const currentDay = today.getDay(); // 0=minggu
+            const today = fromDate ? new Date(fromDate) : new Date();
+            const currentDay = today.getDay();
             const targetDay = days[dayName];
-            
             if (!targetDay) return null;
-            
             const jsDay = targetDay === 6 ? 6 : targetDay;
             const diff = jsDay - (currentDay === 0 ? 7 : currentDay);
             const date = new Date(today);
@@ -651,88 +780,103 @@
         // ==========================================
 
         const loadSchedules = async () => {
-            const { data, error } = await supabaseClient
-                .from('schedules')
-                .select('*')
-                .order('created_at', { ascending: false });
+            try {
+                if (!supabaseClient) {
+                    console.error('❌ Supabase client not initialized');
+                    return;
+                }
 
-            const tbody = document.getElementById('table-schedule');
-            tbody.innerHTML = '';
+                const { data, error } = await supabaseClient
+                    .from('schedules')
+                    .select('*')
+                    .order('created_at', { ascending: false });
 
-            if (error) {
-                console.error(error);
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500">❌ Gagal memuat jadwal</td></tr>`;
-                return;
-            }
+                const tbody = document.getElementById('table-schedule');
+                tbody.innerHTML = '';
 
-            document.getElementById('schedule-count').textContent = data.length;
+                if (error) {
+                    console.error('❌ Error loading schedules:', error);
+                    tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500">❌ Gagal memuat jadwal: ${error.message}</td></tr>`;
+                    return;
+                }
 
-            if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-500">📭 Belum ada jadwal. Silakan tambahkan.</td></tr>`;
-                return;
-            }
+                document.getElementById('schedule-count').textContent = data.length;
 
-            const hariUrutan = { 'Senin': 1, 'Selasa': 2, 'Rabu': 3, 'Kamis': 4, 'Jumat': 5, 'Sabtu': 6 };
-            const sortedData = data.sort((a, b) => hariUrutan[a.day] - hariUrutan[b.day]);
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-500">📭 Belum ada jadwal. Silakan tambahkan.</td></tr>`;
+                    return;
+                }
 
-            sortedData.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.className = "schedule-item hover:bg-gray-50 transition";
-                
-                const color = item.color || '#4f46e5';
-                const isRepeat = item.is_repeat || false;
-                
-                tr.innerHTML = `
-                    <td class="p-4 font-medium text-gray-800">${item.day} ${isRepeat ? '<span class="repeat-badge"><i class="fa-solid fa-rotate mr-1"></i>Ulang</span>' : ''}</td>
-                    <td class="p-4">${item.subject}</td>
-                    <td class="p-4"><span class="bg-indigo-100 text-indigo-800 text-xs px-3 py-1.5 rounded-full font-medium">${item.time_start.substring(0,5)} - ${item.time_end.substring(0,5)}</span></td>
-                    <td class="p-4">${item.room || '-'}</td>
-                    <td class="p-4"><span class="inline-block w-6 h-6 rounded-full" style="background:${color}"></span></td>
-                    <td class="p-4 text-center">
-                        <button onclick="deleteSchedule(${item.id})" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
+                const hariUrutan = { 'Senin': 1, 'Selasa': 2, 'Rabu': 3, 'Kamis': 4, 'Jumat': 5, 'Sabtu': 6 };
+                const sortedData = data.sort((a, b) => hariUrutan[a.day] - hariUrutan[b.day]);
 
-            document.getElementById('total-schedule').textContent = data.length;
-            
-            if (window.calendarInstance) {
-                loadSchedulesForCalendar();
+                sortedData.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.className = "schedule-item hover:bg-gray-50 transition";
+                    const color = item.color || '#4f46e5';
+                    const isRepeat = item.is_repeat || false;
+                    
+                    tr.innerHTML = `
+                        <td class="p-4 font-medium text-gray-800">${item.day} ${isRepeat ? '<span class="repeat-badge"><i class="fa-solid fa-rotate mr-1"></i>Ulang</span>' : ''}</td>
+                        <td class="p-4">${item.subject}</td>
+                        <td class="p-4"><span class="bg-indigo-100 text-indigo-800 text-xs px-3 py-1.5 rounded-full font-medium">${item.time_start ? item.time_start.substring(0,5) : '-'} - ${item.time_end ? item.time_end.substring(0,5) : '-'}</span></td>
+                        <td class="p-4">${item.room || '-'}</td>
+                        <td class="p-4"><span class="inline-block w-6 h-6 rounded-full" style="background:${color}"></span></td>
+                        <td class="p-4 text-center">
+                            <button onclick="deleteSchedule(${item.id})" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                document.getElementById('total-schedule').textContent = data.length;
+                if (calendarInstance) {
+                    loadSchedulesForCalendar();
+                }
+            } catch (err) {
+                console.error('❌ Error in loadSchedules:', err);
             }
         };
 
+        // Form Jadwal Biasa
         document.getElementById('form-schedule').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = e.target.querySelector('button');
+            const btn = document.getElementById('btn-submit-schedule');
+            const originalText = btn.innerHTML;
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...`;
             btn.disabled = true;
 
-            const day = document.getElementById('sch-day').value;
-            const subject = document.getElementById('sch-subject').value;
-            const time_start = document.getElementById('sch-start').value;
-            const time_end = document.getElementById('sch-end').value;
-            const room = document.getElementById('sch-room').value;
-            const color = document.getElementById('sch-color').value;
-            const isRepeat = document.getElementById('sch-repeat').checked;
-            const repeatWeeks = parseInt(document.getElementById('sch-repeat-weeks').value) || 5;
-
-            // Validasi input minggu
-            if (isRepeat && (isNaN(repeatWeeks) || repeatWeeks < 1 || repeatWeeks > 52)) {
-                alert('❌ Jumlah minggu harus antara 1-52');
-                btn.innerHTML = `<i class="fa-solid fa-plus"></i> Simpan Jadwal`;
-                btn.disabled = false;
-                return;
-            }
-
             try {
+                const day = document.getElementById('sch-day').value;
+                const subject = document.getElementById('sch-subject').value;
+                const time_start = document.getElementById('sch-start').value;
+                const time_end = document.getElementById('sch-end').value;
+                const room = document.getElementById('sch-room').value;
+                const color = document.getElementById('sch-color').value;
+                const isRepeat = document.getElementById('sch-repeat').checked;
+                const repeatWeeks = parseInt(document.getElementById('sch-repeat-weeks').value) || 5;
+
+                if (!subject || subject.trim() === '') {
+                    alert('❌ Mata kuliah harus diisi!');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    return;
+                }
+
+                if (!time_start || !time_end) {
+                    alert('❌ Waktu mulai dan selesai harus diisi!');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    return;
+                }
+
                 let schedulesToInsert = [];
 
                 if (isRepeat) {
                     const baseDate = getDateForDay(day);
                     if (!baseDate) {
                         alert('❌ Hari tidak valid');
-                        btn.innerHTML = `<i class="fa-solid fa-plus"></i> Simpan Jadwal`;
+                        btn.innerHTML = originalText;
                         btn.disabled = false;
                         return;
                     }
@@ -740,90 +884,174 @@
                     for (let week = 0; week < repeatWeeks; week++) {
                         const date = new Date(baseDate);
                         date.setDate(date.getDate() + (week * 7));
-                        
-                        // Skip jika tanggal sudah lewat
-                        if (date < new Date()) {
-                            continue;
-                        }
-
+                        if (date < new Date()) continue;
                         schedulesToInsert.push({
-                            day: day,
-                            subject: subject,
-                            time_start: time_start,
-                            time_end: time_end,
-                            room: room,
-                            color: color,
-                            is_repeat: true,
-                            repeat_week: week + 1,
-                            schedule_date: date.toISOString().split('T')[0]
+                            day: day, subject: subject, time_start: time_start, time_end: time_end,
+                            room: room || '', color: color, is_repeat: true,
+                            repeat_week: week + 1, schedule_date: date.toISOString().split('T')[0]
                         });
                     }
                 } else {
                     schedulesToInsert.push({
-                        day: day,
-                        subject: subject,
-                        time_start: time_start,
-                        time_end: time_end,
-                        room: room,
-                        color: color,
-                        is_repeat: false,
-                        repeat_week: null,
-                        schedule_date: null
+                        day: day, subject: subject, time_start: time_start, time_end: time_end,
+                        room: room || '', color: color, is_repeat: false,
+                        repeat_week: null, schedule_date: null
                     });
                 }
 
                 if (schedulesToInsert.length === 0) {
                     alert('⚠️ Tidak ada jadwal yang dibuat (semua tanggal sudah lewat)');
-                    btn.innerHTML = `<i class="fa-solid fa-plus"></i> Simpan Jadwal`;
+                    btn.innerHTML = originalText;
                     btn.disabled = false;
                     return;
                 }
 
                 const { error } = await supabaseClient.from('schedules').insert(schedulesToInsert);
-                
-                if (!error) {
+                if (error) {
+                    alert('❌ Gagal menyimpan jadwal: ' + error.message);
+                } else {
                     document.getElementById('form-schedule').reset();
                     document.getElementById('sch-repeat').checked = false;
                     document.getElementById('repeat-options').style.display = 'none';
                     
-                    // Reset color ke default
-                    document.querySelectorAll('.color-picker-option').forEach(el => el.classList.remove('active'));
-                    document.querySelector('.color-picker-option').classList.add('active');
+                    document.querySelectorAll('#view-schedule .color-picker-option').forEach(el => el.classList.remove('active'));
+                    document.querySelector('#view-schedule .color-picker-option')?.classList.add('active');
                     document.getElementById('sch-color').value = '#4f46e5';
                     selectedColor = '#4f46e5';
                     document.getElementById('color-preview').style.backgroundColor = '#4f46e5';
-                    if (pickrInstance) {
-                        pickrInstance.setColor('#4f46e5');
-                    }
+                    if (pickrInstance) pickrInstance.setColor('#4f46e5');
                     
-                    loadSchedules();
-                    updateCharts();
+                    await loadSchedules();
+                    await updateCharts();
                     showNotification(`✅ ${schedulesToInsert.length} jadwal berhasil ditambahkan!`);
-                } else {
-                    alert('❌ Gagal menyimpan jadwal: ' + error.message);
                 }
             } catch (err) {
                 alert('❌ Error: ' + err.message);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
-
-            btn.innerHTML = `<i class="fa-solid fa-plus"></i> Simpan Jadwal`;
-            btn.disabled = false;
         });
 
+        // Form Jadwal dari Kalender
+        document.getElementById('form-calendar-schedule').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...`;
+            btn.disabled = true;
+
+            try {
+                const day = document.getElementById('cal-sch-day').value;
+                const subject = document.getElementById('cal-sch-subject').value;
+                const time_start = document.getElementById('cal-sch-start').value;
+                const time_end = document.getElementById('cal-sch-end').value;
+                const room = document.getElementById('cal-sch-room').value;
+                const color = document.getElementById('cal-sch-color').value;
+
+                if (!subject || subject.trim() === '') {
+                    alert('❌ Mata kuliah harus diisi!');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    return;
+                }
+
+                if (!time_start || !time_end) {
+                    alert('❌ Waktu mulai dan selesai harus diisi!');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    return;
+                }
+
+                // Dapatkan tanggal dari selectedDate
+                let scheduleDate = selectedDate;
+                if (!scheduleDate) {
+                    alert('❌ Silakan pilih tanggal terlebih dahulu!');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    return;
+                }
+
+                // Format tanggal
+                const dateObj = new Date(scheduleDate);
+                const formattedDate = dateObj.toISOString().split('T')[0];
+
+                const payload = {
+                    day: day,
+                    subject: subject,
+                    time_start: time_start,
+                    time_end: time_end,
+                    room: room || '',
+                    color: color,
+                    is_repeat: false,
+                    repeat_week: null,
+                    schedule_date: formattedDate
+                };
+
+                const { error } = await supabaseClient.from('schedules').insert([payload]);
+                if (error) {
+                    alert('❌ Gagal menyimpan jadwal: ' + error.message);
+                } else {
+                    document.getElementById('form-calendar-schedule').reset();
+                    document.querySelectorAll('#calendar-add-form .color-picker-option').forEach(el => el.classList.remove('active'));
+                    document.querySelector('#calendar-add-form .color-picker-option')?.classList.add('active');
+                    document.getElementById('cal-sch-color').value = '#4f46e5';
+                    selectedCalendarColor = '#4f46e5';
+                    
+                    document.getElementById('calendar-add-form').classList.add('hide');
+                    await loadSchedules();
+                    await updateCharts();
+                    showNotification('✅ Jadwal berhasil ditambahkan!');
+                }
+            } catch (err) {
+                alert('❌ Error: ' + err.message);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // Toggle repeat options
         document.getElementById('sch-repeat').addEventListener('change', function() {
             document.getElementById('repeat-options').style.display = this.checked ? 'flex' : 'none';
         });
 
+        // Fungsi untuk kalender add form
+        function openCalendarAddForm() {
+            if (!selectedDate) {
+                alert('⚠️ Silakan pilih tanggal terlebih dahulu di kalender!');
+                return;
+            }
+            const dateObj = new Date(selectedDate);
+            document.getElementById('calendar-selected-date').textContent = formatDate(selectedDate);
+            document.getElementById('calendar-add-form').classList.remove('hide');
+            // Set hari otomatis
+            const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const dayName = dayNames[dateObj.getDay()];
+            // Map ke bahasa Indonesia
+            const dayMap = {'Senin':'Senin', 'Selasa':'Selasa', 'Rabu':'Rabu', 'Kamis':'Kamis', 'Jumat':'Jumat', 'Sabtu':'Sabtu', 'Minggu':'Minggu'};
+            if (dayMap[dayName]) {
+                document.getElementById('cal-sch-day').value = dayMap[dayName];
+            }
+        }
+
+        function closeCalendarAddForm() {
+            document.getElementById('calendar-add-form').classList.add('hide');
+        }
+
         window.deleteSchedule = async (id) => {
-            if(confirm('Yakin ingin menghapus jadwal ini?')) {
+            if (!confirm('Yakin ingin menghapus jadwal ini?')) return;
+            try {
                 const { error } = await supabaseClient.from('schedules').delete().eq('id', id);
-                if (!error) {
-                    loadSchedules();
-                    updateCharts();
-                    showNotification('🗑️ Jadwal berhasil dihapus');
-                } else {
+                if (error) {
                     alert('❌ Gagal menghapus: ' + error.message);
+                } else {
+                    await loadSchedules();
+                    await updateCharts();
+                    showNotification('🗑️ Jadwal berhasil dihapus');
                 }
+            } catch (err) {
+                alert('❌ Error: ' + err.message);
             }
         };
 
@@ -834,308 +1062,332 @@
         document.getElementById('fin-date').valueAsDate = new Date();
 
         const loadFinances = async () => {
-            const { data, error } = await supabaseClient
-                .from('finances')
-                .select('*')
-                .order('transaction_date', { ascending: false })
-                .order('created_at', { ascending: false });
+            try {
+                if (!supabaseClient) return;
+                const { data, error } = await supabaseClient
+                    .from('finances')
+                    .select('*')
+                    .order('transaction_date', { ascending: false });
 
-            const list = document.getElementById('list-finance');
-            list.innerHTML = '';
+                const list = document.getElementById('list-finance');
+                list.innerHTML = '';
+                let totalPemasukan = 0, totalPengeluaran = 0;
 
-            let totalPemasukan = 0;
-            let totalPengeluaran = 0;
+                if (error) {
+                    list.innerHTML = `<li class="p-4 text-center text-red-500">❌ Gagal memuat keuangan: ${error.message}</li>`;
+                    return;
+                }
 
-            if (error) {
-                console.error(error);
-                list.innerHTML = `<li class="p-4 text-center text-red-500">❌ Gagal memuat keuangan</li>`;
-                return;
-            }
+                document.getElementById('transaction-count').textContent = data.length + ' transaksi';
 
-            document.getElementById('transaction-count').textContent = data.length + ' transaksi';
+                if (data.length === 0) {
+                    list.innerHTML = `<li class="p-4 text-center text-gray-500">📭 Belum ada riwayat transaksi.</li>`;
+                } else {
+                    data.forEach(item => {
+                        if (item.type === 'pemasukan') totalPemasukan += Number(item.amount);
+                        if (item.type === 'pengeluaran') totalPengeluaran += Number(item.amount);
 
-            if (data.length === 0) {
-                list.innerHTML = `<li class="p-4 text-center text-gray-500">📭 Belum ada riwayat transaksi.</li>`;
-            } else {
-                data.forEach(item => {
-                    if (item.type === 'pemasukan') totalPemasukan += Number(item.amount);
-                    if (item.type === 'pengeluaran') totalPengeluaran += Number(item.amount);
+                        const li = document.createElement('li');
+                        li.className = "p-4 flex justify-between items-center hover:bg-gray-50 transition";
+                        const iconColor = item.type === 'pemasukan' ? 'text-green-500 bg-green-100' : 'text-red-500 bg-red-100';
+                        const icon = item.type === 'pemasukan' ? 'fa-arrow-down' : 'fa-arrow-up';
+                        const sign = item.type === 'pemasukan' ? '+' : '-';
+                        const amountColor = item.type === 'pemasukan' ? 'text-green-600' : 'text-gray-800';
 
-                    const li = document.createElement('li');
-                    li.className = "p-4 flex justify-between items-center hover:bg-gray-50 transition";
-                    
-                    const iconColor = item.type === 'pemasukan' ? 'text-green-500 bg-green-100' : 'text-red-500 bg-red-100';
-                    const icon = item.type === 'pemasukan' ? 'fa-arrow-down' : 'fa-arrow-up';
-                    const sign = item.type === 'pemasukan' ? '+' : '-';
-                    const amountColor = item.type === 'pemasukan' ? 'text-green-600' : 'text-gray-800';
-
-                    li.innerHTML = `
-                        <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 rounded-full flex items-center justify-center ${iconColor}">
-                                <i class="fa-solid ${icon}"></i>
+                        li.innerHTML = `
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center ${iconColor}">
+                                    <i class="fa-solid ${icon}"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-800">${item.description}</div>
+                                    <div class="text-xs text-gray-500">${formatDate(item.transaction_date)}</div>
+                                </div>
                             </div>
-                            <div>
-                                <div class="font-medium text-gray-800">${item.description}</div>
-                                <div class="text-xs text-gray-500">${formatDate(item.transaction_date)}</div>
+                            <div class="flex items-center gap-4">
+                                <div class="font-bold ${amountColor}">${sign} ${formatRupiah(item.amount)}</div>
+                                <button onclick="deleteFinance(${item.id})" class="text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark"></i></button>
                             </div>
-                        </div>
-                        <div class="flex items-center gap-4">
-                            <div class="font-bold ${amountColor}">${sign} ${formatRupiah(item.amount)}</div>
-                            <button onclick="deleteFinance(${item.id})" class="text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark"></i></button>
-                        </div>
-                    `;
-                    list.appendChild(li);
-                });
+                        `;
+                        list.appendChild(li);
+                    });
+                }
+
+                const totalSaldo = totalPemasukan - totalPengeluaran;
+                document.getElementById('saldo-pemasukan').innerText = formatRupiah(totalPemasukan);
+                document.getElementById('saldo-pengeluaran').innerText = formatRupiah(totalPengeluaran);
+                document.getElementById('saldo-total').innerText = formatRupiah(totalSaldo);
+                document.getElementById('dash-saldo').innerText = formatRupiah(totalSaldo);
+                document.getElementById('dash-pemasukan').innerText = formatRupiah(totalPemasukan);
+                document.getElementById('dash-pengeluaran').innerText = formatRupiah(totalPengeluaran);
+            } catch (err) {
+                console.error('❌ Error in loadFinances:', err);
             }
-
-            const totalSaldo = totalPemasukan - totalPengeluaran;
-            document.getElementById('saldo-pemasukan').innerText = formatRupiah(totalPemasukan);
-            document.getElementById('saldo-pengeluaran').innerText = formatRupiah(totalPengeluaran);
-            document.getElementById('saldo-total').innerText = formatRupiah(totalSaldo);
-
-            document.getElementById('dash-saldo').innerText = formatRupiah(totalSaldo);
-            document.getElementById('dash-pemasukan').innerText = formatRupiah(totalPemasukan);
-            document.getElementById('dash-pengeluaran').innerText = formatRupiah(totalPengeluaran);
         };
 
         document.getElementById('form-finance').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button');
+            const originalText = btn.innerHTML;
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...`;
             btn.disabled = true;
 
-            const payload = {
-                type: document.getElementById('fin-type').value,
-                amount: document.getElementById('fin-amount').value,
-                description: document.getElementById('fin-desc').value,
-                transaction_date: document.getElementById('fin-date').value
-            };
+            try {
+                const payload = {
+                    type: document.getElementById('fin-type').value,
+                    amount: document.getElementById('fin-amount').value,
+                    description: document.getElementById('fin-desc').value,
+                    transaction_date: document.getElementById('fin-date').value
+                };
 
-            const { error } = await supabaseClient.from('finances').insert([payload]);
-            if (!error) {
-                document.getElementById('form-finance').reset();
-                document.getElementById('fin-date').valueAsDate = new Date();
-                loadFinances();
-                updateCharts();
-                showNotification('✅ Transaksi berhasil disimpan!');
-            } else {
-                alert('❌ Gagal menyimpan transaksi: ' + error.message);
+                const { error } = await supabaseClient.from('finances').insert([payload]);
+                if (!error) {
+                    document.getElementById('form-finance').reset();
+                    document.getElementById('fin-date').valueAsDate = new Date();
+                    await loadFinances();
+                    await updateCharts();
+                    showNotification('✅ Transaksi berhasil disimpan!');
+                } else {
+                    alert('❌ Gagal menyimpan transaksi: ' + error.message);
+                }
+            } catch (err) {
+                alert('❌ Error: ' + err.message);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
-
-            btn.innerHTML = `<i class="fa-solid fa-save"></i> Simpan Transaksi`;
-            btn.disabled = false;
         });
 
         window.deleteFinance = async (id) => {
-            if(confirm('Hapus transaksi ini?')) {
+            if (!confirm('Hapus transaksi ini?')) return;
+            try {
                 await supabaseClient.from('finances').delete().eq('id', id);
-                loadFinances();
-                updateCharts();
+                await loadFinances();
+                await updateCharts();
                 showNotification('🗑️ Transaksi berhasil dihapus');
+            } catch (err) {
+                alert('❌ Error: ' + err.message);
             }
         };
 
         // ==========================================
-        // GRAFIK (Chart.js)
+        // GRAFIK
         // ==========================================
 
         const updateCharts = async () => {
-            const { data: financeData } = await supabaseClient.from('finances').select('*');
-            const { data: scheduleData } = await supabaseClient.from('schedules').select('*');
+            try {
+                if (!supabaseClient) return;
+                const { data: financeData } = await supabaseClient.from('finances').select('*');
+                const { data: scheduleData } = await supabaseClient.from('schedules').select('*');
 
-            const ctx1 = document.getElementById('financeChart').getContext('2d');
-            if (financeChartInstance) financeChartInstance.destroy();
+                const ctx1 = document.getElementById('financeChart').getContext('2d');
+                if (financeChartInstance) financeChartInstance.destroy();
 
-            const pemasukan = financeData?.filter(f => f.type === 'pemasukan').reduce((sum, f) => sum + Number(f.amount), 0) || 0;
-            const pengeluaran = financeData?.filter(f => f.type === 'pengeluaran').reduce((sum, f) => sum + Number(f.amount), 0) || 0;
+                const pemasukan = financeData?.filter(f => f.type === 'pemasukan').reduce((sum, f) => sum + Number(f.amount), 0) || 0;
+                const pengeluaran = financeData?.filter(f => f.type === 'pengeluaran').reduce((sum, f) => sum + Number(f.amount), 0) || 0;
 
-            financeChartInstance = new Chart(ctx1, {
-                type: 'bar',
-                data: {
-                    labels: ['Pemasukan', 'Pengeluaran'],
-                    datasets: [{
-                        label: 'Nominal (Rp)',
-                        data: [pemasukan, pengeluaran],
-                        backgroundColor: ['#34d399', '#f87171'],
-                        borderColor: ['#059669', '#dc2626'],
-                        borderWidth: 2,
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: { display: false }
+                financeChartInstance = new Chart(ctx1, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Pemasukan', 'Pengeluaran'],
+                        datasets: [{
+                            label: 'Nominal (Rp)',
+                            data: [pemasukan, pengeluaran],
+                            backgroundColor: ['#34d399', '#f87171'],
+                            borderColor: ['#059669', '#dc2626'],
+                            borderWidth: 2,
+                            borderRadius: 8
+                        }]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return 'Rp ' + value.toLocaleString('id-ID');
-                                }
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { callback: function(value) { return 'Rp ' + value.toLocaleString('id-ID'); } }
                             }
                         }
                     }
-                }
-            });
+                });
 
-            const ctx2 = document.getElementById('scheduleChart').getContext('2d');
-            if (scheduleChartInstance) scheduleChartInstance.destroy();
+                const ctx2 = document.getElementById('scheduleChart').getContext('2d');
+                if (scheduleChartInstance) scheduleChartInstance.destroy();
 
-            const hariCount = {};
-            const hariList = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-            hariList.forEach(h => hariCount[h] = 0);
-            scheduleData?.forEach(s => {
-                if (hariCount[s.day] !== undefined) hariCount[s.day]++;
-            });
+                const hariCount = {};
+                const hariList = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+                hariList.forEach(h => hariCount[h] = 0);
+                scheduleData?.forEach(s => { if (hariCount[s.day] !== undefined) hariCount[s.day]++; });
 
-            const colors = ['#818cf8', '#6366f1', '#4f46e5', '#4338ca', '#3730a3', '#312e81'];
+                const colors = ['#818cf8', '#6366f1', '#4f46e5', '#4338ca', '#3730a3', '#312e81'];
 
-            scheduleChartInstance = new Chart(ctx2, {
-                type: 'bar',
-                data: {
-                    labels: hariList,
-                    datasets: [{
-                        label: 'Jumlah Jadwal',
-                        data: hariList.map(h => hariCount[h]),
-                        backgroundColor: colors.map(c => c + '88'),
-                        borderColor: colors,
-                        borderWidth: 2,
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: { display: false }
+                scheduleChartInstance = new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: hariList,
+                        datasets: [{
+                            label: 'Jumlah Jadwal',
+                            data: hariList.map(h => hariCount[h]),
+                            backgroundColor: colors.map(c => c + '88'),
+                            borderColor: colors,
+                            borderWidth: 2,
+                            borderRadius: 8
+                        }]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { stepSize: 1 }
-                        }
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
                     }
-                }
-            });
+                });
+            } catch (err) {
+                console.error('❌ Error updating charts:', err);
+            }
         };
 
         // ==========================================
-        // KALENDER (Flatpickr)
+        // KALENDER
         // ==========================================
 
-        let calendarInstance = null;
-        let allSchedules = [];
-        let scheduleColors = {};
-
         const initCalendar = () => {
-            const container = document.getElementById('calendar-container');
-            
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.id = 'calendar-input';
-            input.className = 'w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500';
-            input.placeholder = 'Pilih tanggal...';
-            container.appendChild(input);
+            try {
+                const container = document.getElementById('calendar-container');
+                if (!container) return;
+                
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.id = 'calendar-input';
+                input.className = 'w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500';
+                input.placeholder = 'Pilih tanggal...';
+                container.appendChild(input);
 
-            calendarInstance = flatpickr(input, {
-                inline: true,
-                dateFormat: 'Y-m-d',
-                onChange: function(selectedDates, dateStr) {
-                    showEventsForDate(dateStr);
-                }
-            });
+                calendarInstance = flatpickr(input, {
+                    inline: true,
+                    dateFormat: 'Y-m-d',
+                    onChange: function(selectedDates, dateStr) {
+                        selectedDate = dateStr;
+                        showEventsForDate(dateStr);
+                        // Sembunyikan form tambah jika ada
+                        document.getElementById('calendar-add-form').classList.add('hide');
+                    }
+                });
 
-            loadSchedulesForCalendar();
+                loadSchedulesForCalendar();
+                console.log('✅ Calendar initialized successfully');
+            } catch (err) {
+                console.error('❌ Failed to initialize calendar:', err);
+            }
         };
 
         const loadSchedulesForCalendar = async () => {
-            const { data } = await supabaseClient.from('schedules').select('*');
-            allSchedules = data || [];
-            
-            scheduleColors = {};
-            allSchedules.forEach(s => {
-                if (s.color) {
-                    scheduleColors[s.color] = (scheduleColors[s.color] || 0) + 1;
-                }
-            });
+            try {
+                if (!supabaseClient) return;
+                const { data } = await supabaseClient.from('schedules').select('*');
+                allSchedules = data || [];
 
-            updateColorLegend();
-
-            if (calendarInstance) {
-                const dateEvents = {};
-                allSchedules.forEach(s => {
-                    if (s.schedule_date) {
-                        if (!dateEvents[s.schedule_date]) {
-                            dateEvents[s.schedule_date] = [];
+                if (calendarInstance) {
+                    const dateEvents = {};
+                    allSchedules.forEach(s => {
+                        if (s.schedule_date) {
+                            if (!dateEvents[s.schedule_date]) dateEvents[s.schedule_date] = [];
+                            dateEvents[s.schedule_date].push(s);
                         }
-                        dateEvents[s.schedule_date].push(s);
-                    }
-                });
+                    });
 
-                calendarInstance.set('onDayCreate', function(dObj, dStr, fp, dayElem) {
-                    const dateStr = dayElem.dateObj.toISOString().split('T')[0];
-                    const events = dateEvents[dateStr] || [];
-                    
-                    dayElem.classList.remove('has-event');
-                    dayElem.style.position = 'relative';
-                    
-                    // Hapus dot lama
-                    const oldDot = dayElem.querySelector('.event-dot');
-                    if (oldDot) oldDot.remove();
-                    
-                    if (events.length > 0) {
-                        dayElem.classList.add('has-event');
-                        const color = events[0].color || '#4f46e5';
-                        dayElem.style.color = color;
-                        dayElem.style.fontWeight = 'bold';
+                    calendarInstance.set('onDayCreate', function(dObj, dStr, fp, dayElem) {
+                        const dateStr = dayElem.dateObj.toISOString().split('T')[0];
+                        const events = dateEvents[dateStr] || [];
                         
-                        const dot = document.createElement('span');
-                        dot.className = 'event-dot';
-                        dot.style.cssText = `
-                            position: absolute;
-                            bottom: 2px;
-                            left: 50%;
-                            transform: translateX(-50%);
-                            width: 6px;
-                            height: 6px;
-                            border-radius: 50%;
-                            background: ${color};
-                        `;
-                        dayElem.appendChild(dot);
-                    }
-                });
-                
-                calendarInstance.redraw();
+                        dayElem.classList.remove('has-event');
+                        dayElem.style.position = 'relative';
+                        
+                        const oldDot = dayElem.querySelector('.event-dot');
+                        if (oldDot) oldDot.remove();
+                        
+                        if (events.length > 0) {
+                            dayElem.classList.add('has-event');
+                            const color = events[0].color || '#4f46e5';
+                            dayElem.style.color = color;
+                            dayElem.style.fontWeight = 'bold';
+                            
+                            const dot = document.createElement('span');
+                            dot.className = 'event-dot';
+                            dot.style.cssText = `
+                                position: absolute;
+                                bottom: 4px;
+                                left: 50%;
+                                transform: translateX(-50%);
+                                width: 8px;
+                                height: 8px;
+                                border-radius: 50%;
+                                background: ${color};
+                                border: 1px solid white;
+                            `;
+                            dayElem.appendChild(dot);
+                        }
+                    });
+                    
+                    calendarInstance.redraw();
+                    
+                    // Update legenda dengan nama mata kuliah
+                    updateColorLegend();
+                }
+            } catch (err) {
+                console.error('❌ Error loading schedules for calendar:', err);
             }
         };
 
         const updateColorLegend = () => {
             const container = document.getElementById('color-legend');
-            const colors = Object.keys(scheduleColors);
+            
+            // Kelompokkan berdasarkan warna dan ambil nama mata kuliah
+            const colorMap = {};
+            allSchedules.forEach(s => {
+                if (s.color && s.subject) {
+                    if (!colorMap[s.color]) {
+                        colorMap[s.color] = new Set();
+                    }
+                    colorMap[s.color].add(s.subject);
+                }
+            });
+
+            const colors = Object.keys(colorMap);
             
             if (colors.length === 0) {
-                container.innerHTML = '<span class="text-gray-500 text-sm">Belum ada warna yang digunakan</span>';
+                container.innerHTML = '<span class="text-gray-500 text-sm">Belum ada jadwal</span>';
                 return;
             }
 
-            container.innerHTML = colors.map(color => `
-                <div class="color-legend-item">
-                    <span class="inline-block w-4 h-4 rounded-full" style="background:${color}"></span>
-                    <span class="text-sm text-gray-600">${color} (${scheduleColors[color]})</span>
-                </div>
-            `).join('');
+            container.innerHTML = colors.map(color => {
+                const subjects = Array.from(colorMap[color]).join(', ');
+                return `
+                    <div class="legend-item" onclick="filterByColor('${color}')" title="Klik untuk filter jadwal warna ini">
+                        <span class="inline-block w-4 h-4 rounded-full" style="background:${color}"></span>
+                        <span class="text-sm text-gray-700">${subjects}</span>
+                        <span class="text-xs text-gray-500">(${colorMap[color].size} mata kuliah)</span>
+                    </div>
+                `;
+            }).join('');
         };
 
         const showEventsForDate = (dateStr) => {
             const container = document.getElementById('calendar-events');
+            if (!container) return;
             
             const events = allSchedules.filter(s => s.schedule_date === dateStr);
             
             if (events.length === 0) {
-                container.innerHTML = `<p class="text-gray-500 text-center py-4">📭 Tidak ada jadwal pada tanggal ini</p>`;
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fa-regular fa-calendar-xmark text-4xl text-gray-300 mb-2"></i>
+                        <p class="text-gray-500">📭 Tidak ada jadwal pada tanggal ini</p>
+                        <button onclick="openCalendarAddForm()" class="mt-3 text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                            <i class="fa-solid fa-plus-circle mr-1"></i> Tambah jadwal di tanggal ini
+                        </button>
+                    </div>
+                `;
                 return;
             }
 
@@ -1143,14 +1395,19 @@
             events.forEach(e => {
                 const color = e.color || '#4f46e5';
                 html += `
-                    <div class="flex items-center justify-between p-3 rounded-lg border" style="border-left: 4px solid ${color}; background: ${color}10;">
+                    <div class="calendar-event-item flex items-center justify-between p-3 rounded-lg border" style="border-left: 4px solid ${color}; background: ${color}10;">
                         <div>
                             <div class="font-medium text-gray-800">${e.subject}</div>
-                            <div class="text-sm text-gray-500">⏰ ${e.time_start.substring(0,5)} - ${e.time_end.substring(0,5)}</div>
+                            <div class="text-sm text-gray-500">⏰ ${e.time_start ? e.time_start.substring(0,5) : '-'} - ${e.time_end ? e.time_end.substring(0,5) : '-'}</div>
                             <div class="text-sm text-gray-500">🏛️ ${e.room || 'Tidak ada ruangan'}</div>
                             ${e.is_repeat ? `<span class="text-xs text-yellow-600"><i class="fa-solid fa-rotate mr-1"></i>Minggu ke-${e.repeat_week}</span>` : ''}
                         </div>
-                        <span class="inline-block w-6 h-6 rounded-full" style="background:${color}"></span>
+                        <div class="flex items-center gap-2">
+                            <span class="inline-block w-6 h-6 rounded-full" style="background:${color}"></span>
+                            <button onclick="deleteSchedule(${e.id})" class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 transition">
+                                <i class="fa-solid fa-trash-can text-sm"></i>
+                            </button>
+                        </div>
                     </div>
                 `;
             });
@@ -1158,12 +1415,11 @@
             container.innerHTML = html;
         };
 
-        const updateCalendar = async () => {
-            await loadSchedulesForCalendar();
-            if (calendarInstance) {
-                calendarInstance.redraw();
-            }
-        };
+        // Fungsi filter berdasarkan warna (opsional)
+        function filterByColor(color) {
+            // Bisa ditambahkan fungsi filter jika diperlukan
+            showNotification(`🎨 Menampilkan jadwal dengan warna ${color}`);
+        }
 
         // ==========================================
         // NOTIFIKASI
@@ -1187,35 +1443,37 @@
                 </div>
             `;
             document.body.appendChild(notification);
-            setTimeout(() => {
-                notification.remove();
-            }, 5000);
+            setTimeout(() => notification.remove(), 5000);
         };
 
         // ==========================================
         // INISIALISASI
         // ==========================================
 
-        document.getElementById('repeat-options').style.display = 'none';
-
-        window.onload = () => {
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Initializing application...');
+            document.getElementById('repeat-options').style.display = 'none';
+            
             loadSchedules();
             loadFinances();
-            initCalendar();
-            initPickr();
             
-            setTimeout(() => {
-                updateCharts();
-            }, 500);
+            setTimeout(() => initCalendar(), 500);
+            setTimeout(() => initPickr(), 1000);
+            setTimeout(() => updateCharts(), 1000);
 
             switchTab('dashboard');
             document.getElementById('btn-dashboard').classList.add('bg-indigo-600/50');
-        };
+            console.log('✅ Application initialized successfully');
+        });
 
         window.addEventListener('resize', () => {
-            if (financeChartInstance) financeChartInstance.resize();
-            if (scheduleChartInstance) scheduleChartInstance.resize();
+            if (financeChartInstance) financeChartInstance?.resize();
+            if (scheduleChartInstance) scheduleChartInstance?.resize();
         });
+
+        window.onerror = function(msg, url, line, col, error) {
+            console.error('❌ Global error:', msg, error);
+        };
     </script>
 </body>
 </html>
