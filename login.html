@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - MyDash</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+    </script>
     <style>
         * {
             margin: 0;
@@ -276,7 +277,6 @@
             display: block;
         }
 
-        /* Modal */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -391,7 +391,6 @@
 </head>
 <body>
     <div class="login-box">
-        <!-- Logo -->
         <div class="logo">
             <div class="logo-icon">
                 <i class="fa-solid fa-graduation-cap"></i>
@@ -400,13 +399,11 @@
             <p>Dashboard Kuliah & Keuangan</p>
         </div>
 
-        <!-- Connection Status -->
         <div id="connectionStatus" class="connection-status status-loading">
             <i class="fa-solid fa-spinner fa-spin"></i>
             <span>Mengecek koneksi...</span>
         </div>
 
-        <!-- Messages -->
         <div id="loginError" class="error-msg">
             <i class="fa-solid fa-circle-exclamation"></i>
             <span id="errorText">Error message</span>
@@ -463,12 +460,10 @@
             </button>
         </form>
 
-        <!-- Divider -->
         <div class="divider">
             <span>atau</span>
         </div>
 
-        <!-- Social Login -->
         <button class="social-btn" onclick="loginWithGoogle()">
             <i class="fa-brands fa-google" style="color: #ea4335; font-size: 18px;"></i>
             Google
@@ -478,7 +473,6 @@
             GitHub
         </button>
 
-        <!-- Switch Mode -->
         <div class="switch-mode">
             <span id="switchText">Belum punya akun?</span>
             <a id="switchLink" onclick="switchMode()">Daftar sekarang</a>
@@ -509,18 +503,20 @@
 
     <script>
         // ==========================================
-        // KONFIGURASI SUPABASE - HANYA 1 DEKLARASI
+        // SEMUA KODE DALAM SATU BLOK - TIDAK ADA DUPLIKASI
         // ==========================================
-        var SUPABASE_URL = 'https://tnbvpqpchotveesdxuel.supabase.co';
-        var SUPABASE_KEY = 'sb_publishable_qE8MGS1eB2c4arvLkZjnpw_aQlEo58N';
+
+        // Konfigurasi Supabase - UNIK
+        var MY_SUPABASE_URL = 'https://tnbvpqpchotveesdxuel.supabase.co';
+        var MY_SUPABASE_KEY = 'sb_publishable_qE8MGS1eB2c4arvLkZjnpw_aQlEo58N';
 
         console.log('🚀 Halaman Login dimuat!');
 
-        // Buat Supabase client - HANYA SEKALI dengan var
-        var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // Buat client dengan nama UNIK
+        var sbClient = window.supabase.createClient(MY_SUPABASE_URL, MY_SUPABASE_KEY);
         console.log('✅ Supabase client created');
 
-        var isLogin = true;
+        var isLoginMode = true;
         var isConnected = false;
 
         // ==========================================
@@ -530,19 +526,19 @@
             var statusEl = document.getElementById('connectionStatus');
 
             try {
-                var result = await supabaseClient.auth.getSession();
+                var result = await sbClient.auth.getSession();
                 var data = result.data;
                 var error = result.error;
 
                 if (error) {
                     statusEl.className = 'connection-status status-error';
                     statusEl.innerHTML =
-                        `<i class="fa-solid fa-circle-xmark"></i><span>❌ Gagal koneksi: ${error.message}</span>`;
+                        '<i class="fa-solid fa-circle-xmark"></i><span>❌ Gagal koneksi: ' + error.message + '</span>';
                     isConnected = false;
                 } else {
                     statusEl.className = 'connection-status status-connected';
                     statusEl.innerHTML =
-                        `<i class="fa-solid fa-check-circle"></i><span>✅ Terhubung ke Supabase</span>`;
+                        '<i class="fa-solid fa-check-circle"></i><span>✅ Terhubung ke Supabase</span>';
                     isConnected = true;
 
                     if (data.session) {
@@ -552,7 +548,8 @@
                 }
             } catch (err) {
                 statusEl.className = 'connection-status status-error';
-                statusEl.innerHTML = `<i class="fa-solid fa-circle-xmark"></i><span>❌ Error: ${err.message}</span>`;
+                statusEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i><span>❌ Error: ' + err.message +
+                '</span>';
                 isConnected = false;
             }
         }
@@ -599,27 +596,25 @@
         }
 
         // ==========================================
-        // SWITCH MODE - PERBAIKAN UTAMA
+        // SWITCH MODE - GLOBAL FUNCTION
         // ==========================================
         function switchMode() {
-            console.log('🔄 Switch mode triggered! isLogin:', isLogin);
+            console.log('🔄 Switch mode triggered! isLoginMode:', isLoginMode);
 
-            isLogin = !isLogin;
+            isLoginMode = !isLoginMode;
             var loginForm = document.getElementById('loginForm');
             var registerForm = document.getElementById('registerForm');
             var switchText = document.getElementById('switchText');
             var switchLink = document.getElementById('switchLink');
             var logoTitle = document.getElementById('logoTitle');
 
-            if (isLogin) {
-                // Tampilkan Login, Sembunyikan Register
+            if (isLoginMode) {
                 loginForm.classList.remove('hidden');
                 registerForm.classList.add('hidden');
                 switchText.textContent = 'Belum punya akun?';
                 switchLink.textContent = 'Daftar sekarang';
                 logoTitle.innerHTML = 'My<span>Dash</span>';
             } else {
-                // Tampilkan Register, Sembunyikan Login
                 loginForm.classList.add('hidden');
                 registerForm.classList.remove('hidden');
                 switchText.textContent = 'Sudah punya akun?';
@@ -627,12 +622,11 @@
                 logoTitle.innerHTML = '📝 Daftar <span>Akun</span>';
             }
 
-            // Reset pesan
             document.getElementById('loginError').classList.remove('show');
             document.getElementById('loginSuccess').classList.remove('show');
             document.getElementById('loginInfo').classList.remove('show');
 
-            console.log('✅ Switch mode selesai. isLogin:', isLogin);
+            console.log('✅ Switch mode selesai. isLoginMode:', isLoginMode);
         }
 
         // ==========================================
@@ -694,7 +688,7 @@
             }
 
             try {
-                var result = await supabaseClient.auth.resetPasswordForEmail(email, {
+                var result = await sbClient.auth.resetPasswordForEmail(email, {
                     redirectTo: window.location.origin + '/reset-password.html'
                 });
                 var error = result.error;
@@ -741,7 +735,7 @@
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
 
             try {
-                var result = await supabaseClient.auth.signInWithPassword({
+                var result = await sbClient.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
@@ -805,7 +799,7 @@
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
 
             try {
-                var result = await supabaseClient.auth.signUp({
+                var result = await sbClient.auth.signUp({
                     email: email,
                     password: password,
                     options: {
@@ -830,7 +824,7 @@
 
                     // Simpan profil
                     try {
-                        await supabaseClient
+                        await sbClient
                             .from('profiles')
                             .upsert({
                                 id: data.user.id,
@@ -843,8 +837,7 @@
                     }
 
                     setTimeout(function() {
-                        // Switch ke mode login
-                        if (!isLogin) switchMode();
+                        if (!isLoginMode) switchMode();
                         document.getElementById('loginEmail').value = email;
                         btn.disabled = false;
                         btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Daftar';
@@ -863,7 +856,7 @@
         // ==========================================
         async function loginWithGoogle() {
             try {
-                var result = await supabaseClient.auth.signInWithOAuth({
+                var result = await sbClient.auth.signInWithOAuth({
                     provider: 'google',
                     options: { redirectTo: window.location.origin + '/index.html' }
                 });
@@ -875,7 +868,7 @@
 
         async function loginWithGithub() {
             try {
-                var result = await supabaseClient.auth.signInWithOAuth({
+                var result = await sbClient.auth.signInWithOAuth({
                     provider: 'github',
                     options: { redirectTo: window.location.origin + '/index.html' }
                 });
@@ -886,7 +879,7 @@
         }
 
         // ==========================================
-        // KEYBOARD & CLICK OUTSIDE
+        // KEYBOARD SHORTCUTS
         // ==========================================
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
