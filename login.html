@@ -503,61 +503,69 @@
 
     <script>
         // ==========================================
-        // SEMUA KODE DALAM SATU BLOK - TIDAK ADA DUPLIKASI
+        // CEK APAKAH SUDAH ADA VARIABEL supabase
         // ==========================================
-
-        // Konfigurasi Supabase - UNIK
-        var MY_SUPABASE_URL = 'https://tnbvpqpchotveesdxuel.supabase.co';
-        var MY_SUPABASE_KEY = 'sb_publishable_qE8MGS1eB2c4arvLkZjnpw_aQlEo58N';
-
         console.log('🚀 Halaman Login dimuat!');
 
-        // Buat client dengan nama UNIK
-        var sbClient = window.supabase.createClient(MY_SUPABASE_URL, MY_SUPABASE_KEY);
-        console.log('✅ Supabase client created');
+        // Gunakan nama variabel yang PASTI UNIK
+        var MyDashSupabaseClient = null;
+
+        try {
+            // Cek apakah window.supabase tersedia
+            if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                MyDashSupabaseClient = window.supabase.createClient(
+                    'https://tnbvpqpchotveesdxuel.supabase.co',
+                    'sb_publishable_qE8MGS1eB2c4arvLkZjnpw_aQlEo58N'
+                );
+                console.log('✅ Supabase client created successfully');
+            } else {
+                console.error('❌ Supabase library not loaded');
+            }
+        } catch (err) {
+            console.error('❌ Error creating Supabase client:', err);
+        }
 
         var isLoginMode = true;
         var isConnected = false;
 
         // ==========================================
-        // TEST CONNECTION
+        // FUNGSI GLOBAL - PASTI TERDEFINISI
         // ==========================================
-        async function testConnection() {
-            var statusEl = document.getElementById('connectionStatus');
 
-            try {
-                var result = await sbClient.auth.getSession();
-                var data = result.data;
-                var error = result.error;
+        // SWITCH MODE
+        window.switchMode = function() {
+            console.log('🔄 Switch mode triggered!');
 
-                if (error) {
-                    statusEl.className = 'connection-status status-error';
-                    statusEl.innerHTML =
-                        '<i class="fa-solid fa-circle-xmark"></i><span>❌ Gagal koneksi: ' + error.message + '</span>';
-                    isConnected = false;
-                } else {
-                    statusEl.className = 'connection-status status-connected';
-                    statusEl.innerHTML =
-                        '<i class="fa-solid fa-check-circle"></i><span>✅ Terhubung ke Supabase</span>';
-                    isConnected = true;
+            isLoginMode = !isLoginMode;
+            var loginForm = document.getElementById('loginForm');
+            var registerForm = document.getElementById('registerForm');
+            var switchText = document.getElementById('switchText');
+            var switchLink = document.getElementById('switchLink');
+            var logoTitle = document.getElementById('logoTitle');
 
-                    if (data.session) {
-                        console.log('✅ User sudah login, redirect ke index.html');
-                        window.location.href = 'index.html';
-                    }
-                }
-            } catch (err) {
-                statusEl.className = 'connection-status status-error';
-                statusEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i><span>❌ Error: ' + err.message +
-                '</span>';
-                isConnected = false;
+            if (isLoginMode) {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                switchText.textContent = 'Belum punya akun?';
+                switchLink.textContent = 'Daftar sekarang';
+                logoTitle.innerHTML = 'My<span>Dash</span>';
+            } else {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                switchText.textContent = 'Sudah punya akun?';
+                switchLink.textContent = 'Masuk sekarang';
+                logoTitle.innerHTML = '📝 Daftar <span>Akun</span>';
             }
-        }
 
-        // ==========================================
+            document.getElementById('loginError').classList.remove('show');
+            document.getElementById('loginSuccess').classList.remove('show');
+            document.getElementById('loginInfo').classList.remove('show');
+
+            console.log('✅ Switch mode selesai. isLoginMode:', isLoginMode);
+        };
+
         // PASSWORD STRENGTH
-        // ==========================================
-        function checkPasswordStrength(password) {
+        window.checkPasswordStrength = function(password) {
             var bar = document.getElementById('passwordStrengthBar');
             var text = document.getElementById('passwordStrengthText');
             var label = document.getElementById('strengthLabel');
@@ -593,40 +601,138 @@
             bar.style.background = color;
             label.textContent = 'Kekuatan password: ' + level;
             text.classList.add('show');
-        }
+        };
 
-        // ==========================================
-        // SWITCH MODE - GLOBAL FUNCTION
-        // ==========================================
-        function switchMode() {
-            console.log('🔄 Switch mode triggered! isLoginMode:', isLoginMode);
+        // FORGOT PASSWORD
+        window.openForgotPassword = function() {
+            document.getElementById('forgotModal').classList.add('active');
+            document.getElementById('modalError').classList.remove('show');
+            document.getElementById('modalSuccess').classList.remove('show');
+            document.getElementById('resetEmail').value = '';
+            document.getElementById('resetEmail').focus();
+        };
 
-            isLoginMode = !isLoginMode;
-            var loginForm = document.getElementById('loginForm');
-            var registerForm = document.getElementById('registerForm');
-            var switchText = document.getElementById('switchText');
-            var switchLink = document.getElementById('switchLink');
-            var logoTitle = document.getElementById('logoTitle');
+        window.closeForgotPassword = function() {
+            document.getElementById('forgotModal').classList.remove('active');
+        };
 
-            if (isLoginMode) {
-                loginForm.classList.remove('hidden');
-                registerForm.classList.add('hidden');
-                switchText.textContent = 'Belum punya akun?';
-                switchLink.textContent = 'Daftar sekarang';
-                logoTitle.innerHTML = 'My<span>Dash</span>';
-            } else {
-                loginForm.classList.add('hidden');
-                registerForm.classList.remove('hidden');
-                switchText.textContent = 'Sudah punya akun?';
-                switchLink.textContent = 'Masuk sekarang';
-                logoTitle.innerHTML = '📝 Daftar <span>Akun</span>';
+        window.sendResetPassword = async function() {
+            var email = document.getElementById('resetEmail').value;
+            var errorEl = document.getElementById('modalError');
+            var errorText = document.getElementById('modalErrorText');
+            var successEl = document.getElementById('modalSuccess');
+            var successText = document.getElementById('modalSuccessText');
+
+            errorEl.classList.remove('show');
+            successEl.classList.remove('show');
+
+            if (!email) {
+                errorText.textContent = 'Masukkan email!';
+                errorEl.classList.add('show');
+                return;
             }
 
-            document.getElementById('loginError').classList.remove('show');
-            document.getElementById('loginSuccess').classList.remove('show');
-            document.getElementById('loginInfo').classList.remove('show');
+            if (!MyDashSupabaseClient) {
+                errorText.textContent = 'Koneksi ke database gagal!';
+                errorEl.classList.add('show');
+                return;
+            }
 
-            console.log('✅ Switch mode selesai. isLoginMode:', isLoginMode);
+            try {
+                var result = await MyDashSupabaseClient.auth.resetPasswordForEmail(email, {
+                    redirectTo: window.location.origin + '/reset-password.html'
+                });
+
+                if (result.error) {
+                    errorText.textContent = result.error.message;
+                    errorEl.classList.add('show');
+                    return;
+                }
+
+                successText.textContent = '✅ Link reset password telah dikirim ke email Anda!';
+                successEl.classList.add('show');
+
+                setTimeout(function() {
+                    window.closeForgotPassword();
+                }, 3000);
+            } catch (err) {
+                errorText.textContent = 'Terjadi kesalahan: ' + err.message;
+                errorEl.classList.add('show');
+            }
+        };
+
+        // SOCIAL LOGIN
+        window.loginWithGoogle = async function() {
+            if (!MyDashSupabaseClient) {
+                alert('❌ Koneksi ke database gagal!');
+                return;
+            }
+            try {
+                var result = await MyDashSupabaseClient.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: { redirectTo: window.location.origin + '/index.html' }
+                });
+                if (result.error) alert('❌ Error: ' + result.error.message);
+            } catch (err) {
+                alert('❌ Error: ' + err.message);
+            }
+        };
+
+        window.loginWithGithub = async function() {
+            if (!MyDashSupabaseClient) {
+                alert('❌ Koneksi ke database gagal!');
+                return;
+            }
+            try {
+                var result = await MyDashSupabaseClient.auth.signInWithOAuth({
+                    provider: 'github',
+                    options: { redirectTo: window.location.origin + '/index.html' }
+                });
+                if (result.error) alert('❌ Error: ' + result.error.message);
+            } catch (err) {
+                alert('❌ Error: ' + err.message);
+            }
+        };
+
+        // ==========================================
+        // TEST CONNECTION
+        // ==========================================
+        async function testConnection() {
+            var statusEl = document.getElementById('connectionStatus');
+
+            if (!MyDashSupabaseClient) {
+                statusEl.className = 'connection-status status-error';
+                statusEl.innerHTML =
+                    '<i class="fa-solid fa-circle-xmark"></i><span>❌ Supabase client tidak tersedia</span>';
+                return;
+            }
+
+            try {
+                var result = await MyDashSupabaseClient.auth.getSession();
+
+                if (result.error) {
+                    statusEl.className = 'connection-status status-error';
+                    statusEl.innerHTML =
+                        '<i class="fa-solid fa-circle-xmark"></i><span>❌ Gagal koneksi: ' + result.error.message +
+                        '</span>';
+                    isConnected = false;
+                } else {
+                    statusEl.className = 'connection-status status-connected';
+                    statusEl.innerHTML =
+                        '<i class="fa-solid fa-check-circle"></i><span>✅ Terhubung ke Supabase</span>';
+                    isConnected = true;
+
+                    if (result.data.session) {
+                        console.log('✅ User sudah login, redirect ke index.html');
+                        window.location.href = 'index.html';
+                    }
+                }
+            } catch (err) {
+                statusEl.className = 'connection-status status-error';
+                statusEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i><span>❌ Error: ' + err.message +
+                '</span>';
+                isConnected = false;
+            }
         }
 
         // ==========================================
@@ -657,61 +763,6 @@
         }
 
         // ==========================================
-        // FORGOT PASSWORD
-        // ==========================================
-        function openForgotPassword() {
-            document.getElementById('forgotModal').classList.add('active');
-            document.getElementById('modalError').classList.remove('show');
-            document.getElementById('modalSuccess').classList.remove('show');
-            document.getElementById('resetEmail').value = '';
-            document.getElementById('resetEmail').focus();
-        }
-
-        function closeForgotPassword() {
-            document.getElementById('forgotModal').classList.remove('active');
-        }
-
-        async function sendResetPassword() {
-            var email = document.getElementById('resetEmail').value;
-            var errorEl = document.getElementById('modalError');
-            var errorText = document.getElementById('modalErrorText');
-            var successEl = document.getElementById('modalSuccess');
-            var successText = document.getElementById('modalSuccessText');
-
-            errorEl.classList.remove('show');
-            successEl.classList.remove('show');
-
-            if (!email) {
-                errorText.textContent = 'Masukkan email!';
-                errorEl.classList.add('show');
-                return;
-            }
-
-            try {
-                var result = await sbClient.auth.resetPasswordForEmail(email, {
-                    redirectTo: window.location.origin + '/reset-password.html'
-                });
-                var error = result.error;
-
-                if (error) {
-                    errorText.textContent = error.message;
-                    errorEl.classList.add('show');
-                    return;
-                }
-
-                successText.textContent = '✅ Link reset password telah dikirim ke email Anda!';
-                successEl.classList.add('show');
-
-                setTimeout(function() {
-                    closeForgotPassword();
-                }, 3000);
-            } catch (err) {
-                errorText.textContent = 'Terjadi kesalahan: ' + err.message;
-                errorEl.classList.add('show');
-            }
-        }
-
-        // ==========================================
         // LOGIN
         // ==========================================
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
@@ -731,26 +782,29 @@
                 return;
             }
 
+            if (!MyDashSupabaseClient) {
+                showError('❌ Koneksi ke database gagal! Refresh halaman.');
+                return;
+            }
+
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
 
             try {
-                var result = await sbClient.auth.signInWithPassword({
+                var result = await MyDashSupabaseClient.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
-                var data = result.data;
-                var error = result.error;
 
-                if (error) {
-                    showError('❌ ' + error.message);
+                if (result.error) {
+                    showError('❌ ' + result.error.message);
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Masuk';
                     return;
                 }
 
-                if (data.user) {
-                    console.log('✅ Login success:', data.user.email);
+                if (result.data.user) {
+                    console.log('✅ Login success:', result.data.user.email);
                     showSuccess('✅ Login berhasil! Mengalihkan...');
                     setTimeout(function() {
                         window.location.href = 'index.html';
@@ -795,11 +849,16 @@
                 return;
             }
 
+            if (!MyDashSupabaseClient) {
+                showError('❌ Koneksi ke database gagal! Refresh halaman.');
+                return;
+            }
+
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
 
             try {
-                var result = await sbClient.auth.signUp({
+                var result = await MyDashSupabaseClient.auth.signUp({
                     email: email,
                     password: password,
                     options: {
@@ -808,26 +867,24 @@
                         }
                     }
                 });
-                var data = result.data;
-                var error = result.error;
 
-                if (error) {
-                    showError('❌ ' + error.message);
+                if (result.error) {
+                    showError('❌ ' + result.error.message);
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Daftar';
                     return;
                 }
 
-                if (data.user) {
-                    console.log('✅ Register success:', data.user.email);
+                if (result.data.user) {
+                    console.log('✅ Register success:', result.data.user.email);
                     showSuccess('✅ Pendaftaran berhasil! Silakan cek email untuk verifikasi.');
 
                     // Simpan profil
                     try {
-                        await sbClient
+                        await MyDashSupabaseClient
                             .from('profiles')
                             .upsert({
-                                id: data.user.id,
+                                id: result.data.user.id,
                                 full_name: name,
                                 email: email,
                                 updated_at: new Date().toISOString()
@@ -837,7 +894,7 @@
                     }
 
                     setTimeout(function() {
-                        if (!isLoginMode) switchMode();
+                        if (!isLoginMode) window.switchMode();
                         document.getElementById('loginEmail').value = email;
                         btn.disabled = false;
                         btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Daftar';
@@ -852,44 +909,17 @@
         });
 
         // ==========================================
-        // SOCIAL LOGIN
-        // ==========================================
-        async function loginWithGoogle() {
-            try {
-                var result = await sbClient.auth.signInWithOAuth({
-                    provider: 'google',
-                    options: { redirectTo: window.location.origin + '/index.html' }
-                });
-                if (result.error) alert('❌ Error: ' + result.error.message);
-            } catch (err) {
-                alert('❌ Error: ' + err.message);
-            }
-        }
-
-        async function loginWithGithub() {
-            try {
-                var result = await sbClient.auth.signInWithOAuth({
-                    provider: 'github',
-                    options: { redirectTo: window.location.origin + '/index.html' }
-                });
-                if (result.error) alert('❌ Error: ' + result.error.message);
-            } catch (err) {
-                alert('❌ Error: ' + err.message);
-            }
-        }
-
-        // ==========================================
         // KEYBOARD SHORTCUTS
         // ==========================================
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                closeForgotPassword();
+                window.closeForgotPassword();
             }
         });
 
         document.getElementById('forgotModal').addEventListener('click', function(e) {
             if (e.target === this) {
-                closeForgotPassword();
+                window.closeForgotPassword();
             }
         });
 
@@ -898,7 +928,7 @@
         // ==========================================
         document.addEventListener('DOMContentLoaded', function() {
             console.log('✅ DOM loaded');
-            console.log('✅ switchMode function tersedia:', typeof switchMode);
+            console.log('✅ switchMode function tersedia:', typeof window.switchMode);
             setTimeout(testConnection, 500);
             console.log('✅ Halaman login siap!');
         });
