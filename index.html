@@ -3,294 +3,725 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - MyDash</title>
-
-    <!-- ========================================== -->
-    <!-- PROTEKSI LOGIN - WAJIB DI AWAL!           -->
-    <!-- ========================================== -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Login - MyDash</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Loading Screen */
-        #auth-loading {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 50%, #7f1d1d 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .login-box {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 40px 35px;
+            border-radius: 20px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            animation: slideUp 0.6s ease;
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo-icon {
+            font-size: 48px;
+            color: #dc2626;
+            margin-bottom: 10px;
+        }
+        .logo h1 {
+            font-size: 28px;
+            color: #1f2937;
+            font-weight: 700;
+        }
+        .logo h1 span {
+            color: #dc2626;
+        }
+        .logo p {
+            color: #6b7280;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+        .input-group {
+            margin-bottom: 16px;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 13px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 15px;
+            box-sizing: border-box;
+            transition: all 0.3s;
+            background: #f9fafb;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #dc2626;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1);
+        }
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+        }
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .forgot-link {
+            text-align: right;
+            margin-top: -8px;
+            margin-bottom: 16px;
+        }
+        .forgot-link a {
+            font-size: 13px;
+            color: #6b7280;
+            cursor: pointer;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .forgot-link a:hover {
+            color: #dc2626;
+            text-decoration: underline;
+        }
+        .switch-mode {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .switch-mode a {
+            color: #dc2626;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .switch-mode a:hover {
+            text-decoration: underline;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 24px 0;
+        }
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e5e7eb;
+        }
+        .divider span {
+            color: #9ca3af;
+            font-size: 13px;
+        }
+        .social-btn {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+        .social-btn:hover {
+            border-color: #dc2626;
+            background: #fef2f2;
+            transform: translateY(-2px);
+        }
+        .social-btn.google:hover {
+            border-color: #ea4335;
+        }
+        .social-btn.github:hover {
+            border-color: #24292e;
+        }
+        .error-msg {
+            color: #dc2626;
+            font-size: 14px;
+            padding: 12px;
+            background: #fef2f2;
+            border-radius: 10px;
+            border: 1px solid #fecaca;
+            margin-bottom: 16px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+        .error-msg.show {
+            display: flex;
+        }
+        .success-msg {
+            color: #16a34a;
+            font-size: 14px;
+            padding: 12px;
+            background: #f0fdf4;
+            border-radius: 10px;
+            border: 1px solid #bbf7d0;
+            margin-bottom: 16px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+        .success-msg.show {
+            display: flex;
+        }
+
+        /* Modal */
+        .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, #dc2626 0%, #991b1b 50%, #7f1d1d 100%);
-            display: flex;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
             align-items: center;
             justify-content: center;
-            z-index: 99999;
-            flex-direction: column;
-            gap: 20px;
-            transition: opacity 0.5s ease;
+            padding: 20px;
+            z-index: 9999;
+            backdrop-filter: blur(4px);
         }
-        #auth-loading.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        .auth-loader {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(255, 255, 255, 0.3);
-            border-top: 5px solid white;
-            border-radius: 50%;
-            animation: spinAuth 1s linear infinite;
-        }
-        @keyframes spinAuth {
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
-        }
-        #auth-loading p {
-            color: white;
-            font-family: Arial, sans-serif;
-            font-size: 16px;
-        }
-
-        /* Style dasar dashboard */
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: #fef2f2;
-            margin: 0;
-            padding: 0;
-        }
-        .dashboard-header {
-            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
-            padding: 20px 30px;
-            color: white;
+        .modal-overlay.active {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
-        .dashboard-header h1 {
-            margin: 0;
-            font-size: 24px;
-        }
-        .dashboard-header h1 span {
-            font-weight: 300;
-        }
-        .dashboard-header .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .dashboard-header .user-info .username {
-            font-weight: 600;
-        }
-        .logout-btn {
-            padding: 8px 20px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
-        .dashboard-content {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-        .welcome-card {
+        .modal-box {
             background: white;
             padding: 30px;
             border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            animation: slideUp 0.3s ease;
         }
-        .welcome-card h2 {
+        .modal-box h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
             color: #1f2937;
-            font-size: 28px;
-            margin-bottom: 10px;
         }
-        .welcome-card h2 span {
+        .modal-box h3 i {
             color: #dc2626;
         }
-        .welcome-card p {
-            color: #6b7280;
-            font-size: 16px;
-        }
-        .welcome-card .emoji-big {
-            font-size: 60px;
-            display: block;
-            margin-bottom: 15px;
-        }
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
-        }
-        .feature-card {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
-            text-align: center;
-            transition: all 0.3s;
-            border-left: 4px solid #dc2626;
-        }
-        .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.15);
-        }
-        .feature-card .icon {
-            font-size: 40px;
-            color: #dc2626;
-            margin-bottom: 10px;
-        }
-        .feature-card h3 {
-            color: #1f2937;
-            margin: 10px 0 5px;
-        }
-        .feature-card p {
+        .modal-box p {
             color: #6b7280;
             font-size: 14px;
-            margin: 0;
+            margin-bottom: 20px;
         }
-        .feature-card .count {
-            font-size: 32px;
-            font-weight: 700;
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .modal-actions button {
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+        }
+        .modal-actions .btn-cancel {
+            flex: 1;
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+        .modal-actions .btn-cancel:hover {
+            background: #e5e7eb;
+        }
+        .modal-actions .btn-submit {
+            flex: 2;
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            color: white;
+        }
+        .modal-actions .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+        }
+        .modal-close {
+            float: right;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #9ca3af;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .modal-close:hover {
+            color: #1f2937;
+        }
+        .modal-error {
             color: #dc2626;
-            margin: 10px 0;
+            padding: 10px;
+            background: #fef2f2;
+            border-radius: 8px;
+            border: 1px solid #fecaca;
+            margin-bottom: 12px;
+            display: none;
+        }
+        .modal-error.show {
+            display: block;
+        }
+        .modal-success {
+            color: #16a34a;
+            padding: 10px;
+            background: #f0fdf4;
+            border-radius: 8px;
+            border: 1px solid #bbf7d0;
+            margin-bottom: 12px;
+            display: none;
+        }
+        .modal-success.show {
+            display: block;
+        }
+
+        .connection-status {
+            padding: 10px 12px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-connected {
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+        .status-error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        .status-loading {
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+        }
+
+        @media (max-width: 480px) {
+            .login-box {
+                padding: 24px 20px;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="login-box">
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <h1>My<span>Dash</span></h1>
+            <p>Dashboard Kuliah & Keuangan</p>
+        </div>
 
-    <!-- ========================================== -->
-    <!-- LOADING SCREEN - SELALU TAMPIL DULU        -->
-    <!-- ========================================== -->
-    <div id="auth-loading">
-        <div class="auth-loader"></div>
-        <p>⏳ Memeriksa sesi login...</p>
+        <div id="connectionStatus" class="connection-status status-loading">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            <span>Mengecek koneksi...</span>
+        </div>
+
+        <div id="loginError" class="error-msg">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span id="errorText">Error message</span>
+        </div>
+
+        <div id="loginSuccess" class="success-msg">
+            <i class="fa-solid fa-check-circle"></i>
+            <span id="successText">Success message</span>
+        </div>
+
+        <form id="loginForm">
+            <div class="input-group">
+                <input type="email" id="loginEmail" placeholder="Email" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="loginPassword" placeholder="Password" required>
+            </div>
+            <div class="forgot-link">
+                <a onclick="openForgotPassword()">Lupa password?</a>
+            </div>
+            <button type="submit" class="btn-login" id="loginBtn">
+                <i class="fa-solid fa-right-to-bracket"></i> Masuk
+            </button>
+        </form>
+
+        <form id="registerForm" class="hidden">
+            <div class="input-group">
+                <input type="text" id="registerName" placeholder="Nama Lengkap" required>
+            </div>
+            <div class="input-group">
+                <input type="email" id="registerEmail" placeholder="Email" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="registerPassword" placeholder="Password (min 6)" required minlength="6">
+            </div>
+            <div class="input-group">
+                <input type="password" id="registerConfirmPassword" placeholder="Konfirmasi Password" required>
+            </div>
+            <button type="submit" class="btn-login" id="registerBtn">
+                <i class="fa-solid fa-user-plus"></i> Daftar
+            </button>
+        </form>
+
+        <div class="divider">
+            <span>atau</span>
+        </div>
+
+        <button class="social-btn google" onclick="loginWithGoogle()">
+            <i class="fa-brands fa-google" style="color: #ea4335; font-size: 18px;"></i>
+            Google
+        </button>
+        <button class="social-btn github" onclick="loginWithGithub()">
+            <i class="fa-brands fa-github" style="font-size: 18px;"></i>
+            GitHub
+        </button>
+
+        <div class="switch-mode">
+            <span id="switchText">Belum punya akun?</span>
+            <a id="switchLink" onclick="switchMode()">Daftar sekarang</a>
+        </div>
+    </div>
+
+    <div id="forgotModal" class="modal-overlay">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeForgotPassword()">&times;</button>
+            <h3><i class="fa-solid fa-key"></i> Lupa Password</h3>
+            <p>Masukkan email Anda untuk reset password.</p>
+            <div id="modalError" class="modal-error">
+                <span id="modalErrorText">Error</span>
+            </div>
+            <div id="modalSuccess" class="modal-success">
+                <span id="modalSuccessText">Sukses</span>
+            </div>
+            <div class="input-group">
+                <input type="email" id="resetEmail" placeholder="Email" required>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeForgotPassword()">Batal</button>
+                <button class="btn-submit" onclick="sendResetPassword()">Kirim Link</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        // ==========================================
-        // PROTEKSI: Cek session di index.html
-        // ==========================================
         const SUPABASE_URL = 'https://tnbvpqpchotveesdxuel.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_qE8MGS1eB2c4arvLkZjnpw_aQlEo58N';
 
+        console.log('🚀 Halaman Login dimuat!');
+
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        console.log('✅ Supabase client created');
 
-        async function checkAuth() {
+        let isLogin = true;
+        let isConnected = false;
+
+        async function testConnection() {
+            const statusEl = document.getElementById('connectionStatus');
             try {
-                console.log('🔒 Checking authentication...');
-                const { data: { session }, error } = await supabase.auth.getSession();
-
+                const { data, error } = await supabase.auth.getSession();
                 if (error) {
-                    console.error('❌ Auth error:', error);
-                    window.location.href = 'login.html';
-                    return;
+                    statusEl.className = 'connection-status status-error';
+                    statusEl.innerHTML =
+                        `<i class="fa-solid fa-circle-xmark"></i><span>❌ Gagal koneksi: ${error.message}</span>`;
+                    isConnected = false;
+                } else {
+                    statusEl.className = 'connection-status status-connected';
+                    statusEl.innerHTML =
+                        `<i class="fa-solid fa-check-circle"></i><span>✅ Terhubung ke Supabase</span>`;
+                    isConnected = true;
+                    if (data.session) {
+                        console.log('✅ User sudah login, redirect ke index.html');
+                        window.location.href = 'index.html';
+                    }
                 }
-
-                if (!session) {
-                    console.log('❌ User belum login, redirect ke login.html');
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                console.log('✅ User terautentikasi:', session.user.email);
-
-                // Sembunyikan loading screen
-                document.getElementById('auth-loading').classList.add('hidden');
-
-                // Tampilkan nama user
-                const userName = session.user.user_metadata?.full_name || session.user.email;
-                const userElements = document.querySelectorAll('.username');
-                userElements.forEach(el => {
-                    el.textContent = userName;
-                });
-
             } catch (err) {
-                console.error('❌ Error checking auth:', err);
-                window.location.href = 'login.html';
+                statusEl.className = 'connection-status status-error';
+                statusEl.innerHTML = `<i class="fa-solid fa-circle-xmark"></i><span>❌ Error: ${err.message}</span>`;
+                isConnected = false;
             }
         }
 
-        // ==========================================
-        // LOGOUT
-        // ==========================================
-        async function logoutUser() {
-            if (confirm('Yakin ingin logout?')) {
-                await supabase.auth.signOut();
-                window.location.href = 'login.html';
+        function switchMode() {
+            isLogin = !isLogin;
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const switchText = document.getElementById('switchText');
+            const switchLink = document.getElementById('switchLink');
+            if (isLogin) {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                switchText.textContent = 'Belum punya akun?';
+                switchLink.textContent = 'Daftar sekarang';
+            } else {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                switchText.textContent = 'Sudah punya akun?';
+                switchLink.textContent = 'Masuk sekarang';
+            }
+            document.getElementById('loginError').classList.remove('show');
+            document.getElementById('loginSuccess').classList.remove('show');
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('loginError');
+            document.getElementById('errorText').textContent = message;
+            errorEl.classList.add('show');
+            document.getElementById('loginSuccess').classList.remove('show');
+        }
+
+        function showSuccess(message) {
+            const successEl = document.getElementById('loginSuccess');
+            document.getElementById('successText').textContent = message;
+            successEl.classList.add('show');
+            document.getElementById('loginError').classList.remove('show');
+        }
+
+        function openForgotPassword() {
+            document.getElementById('forgotModal').classList.add('active');
+            document.getElementById('modalError').classList.remove('show');
+            document.getElementById('modalSuccess').classList.remove('show');
+            document.getElementById('resetEmail').value = '';
+            document.getElementById('resetEmail').focus();
+        }
+
+        function closeForgotPassword() {
+            document.getElementById('forgotModal').classList.remove('active');
+        }
+
+        async function sendResetPassword() {
+            const email = document.getElementById('resetEmail').value;
+            const errorEl = document.getElementById('modalError');
+            const errorText = document.getElementById('modalErrorText');
+            const successEl = document.getElementById('modalSuccess');
+            const successText = document.getElementById('modalSuccessText');
+            errorEl.classList.remove('show');
+            successEl.classList.remove('show');
+            if (!email) {
+                errorText.textContent = 'Masukkan email!';
+                errorEl.classList.add('show');
+                return;
+            }
+            if (!isConnected) {
+                errorText.textContent = 'Koneksi ke database gagal!';
+                errorEl.classList.add('show');
+                return;
+            }
+            try {
+                const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: window.location.origin + '/reset-password.html'
+                });
+                if (error) {
+                    errorText.textContent = error.message;
+                    errorEl.classList.add('show');
+                    return;
+                }
+                successText.textContent = '✅ Link reset password telah dikirim ke email Anda!';
+                successEl.classList.add('show');
+                setTimeout(() => {
+                    closeForgotPassword();
+                }, 3000);
+            } catch (err) {
+                errorText.textContent = 'Terjadi kesalahan. Coba lagi.';
+                errorEl.classList.add('show');
             }
         }
 
-        // ==========================================
-        // JALANKAN SAAT HALAMAN DIMUAT
-        // ==========================================
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            console.log('📝 Login form submitted');
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const btn = document.getElementById('loginBtn');
+            document.getElementById('loginError').classList.remove('show');
+            document.getElementById('loginSuccess').classList.remove('show');
+            if (!email || !password) {
+                showError('Silakan isi email dan password!');
+                return;
+            }
+            if (!isConnected) {
+                showError('Koneksi ke database gagal!');
+                return;
+            }
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memproses...`;
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                if (error) {
+                    showError(error.message);
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fa-solid fa-right-to-bracket"></i> Masuk`;
+                    return;
+                }
+                if (data.user) {
+                    console.log('✅ Login success:', data.user.email);
+                    showSuccess('✅ Login berhasil! Mengalihkan...');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1500);
+                }
+            } catch (err) {
+                showError('Terjadi kesalahan. Silakan coba lagi.');
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-right-to-bracket"></i> Masuk`;
+            }
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            console.log('📝 Register form submitted');
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+            const btn = document.getElementById('registerBtn');
+            document.getElementById('loginError').classList.remove('show');
+            document.getElementById('loginSuccess').classList.remove('show');
+            if (!name || !email || !password || !confirmPassword) {
+                showError('Semua field harus diisi!');
+                return;
+            }
+            if (password !== confirmPassword) {
+                showError('Password dan konfirmasi password tidak sama!');
+                return;
+            }
+            if (password.length < 6) {
+                showError('Password minimal 6 karakter!');
+                return;
+            }
+            if (!isConnected) {
+                showError('Koneksi ke database gagal!');
+                return;
+            }
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memproses...`;
+            try {
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: { full_name: name }
+                    }
+                });
+                if (error) {
+                    showError(error.message);
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fa-solid fa-user-plus"></i> Daftar`;
+                    return;
+                }
+                if (data.user) {
+                    showSuccess('✅ Pendaftaran berhasil! Silakan cek email untuk verifikasi.');
+                    setTimeout(() => {
+                        if (!isLogin) switchMode();
+                        document.getElementById('loginEmail').value = email;
+                        btn.disabled = false;
+                        btn.innerHTML = `<i class="fa-solid fa-user-plus"></i> Daftar`;
+                    }, 2000);
+                }
+            } catch (err) {
+                showError('Terjadi kesalahan. Silakan coba lagi.');
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-user-plus"></i> Daftar`;
+            }
+        });
+
+        async function loginWithGoogle() {
+            if (!isConnected) {
+                alert('Koneksi ke database gagal!');
+                return;
+            }
+            try {
+                const { data, error } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: { redirectTo: window.location.origin + '/index.html' }
+                });
+                if (error) alert('Error: ' + error.message);
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        async function loginWithGithub() {
+            if (!isConnected) {
+                alert('Koneksi ke database gagal!');
+                return;
+            }
+            try {
+                const { data, error } = await supabase.auth.signInWithOAuth({
+                    provider: 'github',
+                    options: { redirectTo: window.location.origin + '/index.html' }
+                });
+                if (error) alert('Error: ' + error.message);
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeForgotPassword();
+            }
+        });
+
+        document.getElementById('forgotModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeForgotPassword();
+            }
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
-            checkAuth();
+            console.log('✅ DOM loaded');
+            testConnection();
+            console.log('✅ Halaman login siap!');
         });
     </script>
-
-    <!-- ========================================== -->
-    <!-- KONTEN DASHBOARD                          -->
-    <!-- ========================================== -->
-    <div id="dashboard-content">
-        <!-- Header -->
-        <div class="dashboard-header">
-            <h1>📚 My<span>Dash</span></h1>
-            <div class="user-info">
-                <span class="username">User</span>
-                <button class="logout-btn" onclick="logoutUser()">
-                    <i class="fa-solid fa-right-from-bracket"></i> Logout
-                </button>
-            </div>
-        </div>
-
-        <!-- Content -->
-        <div class="dashboard-content">
-            <div class="welcome-card">
-                <span class="emoji-big">👋</span>
-                <h2>Selamat Datang, <span class="username">User</span>!</h2>
-                <p>Dashboard Kuliah & Keuangan Anda siap digunakan.</p>
-            </div>
-
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="icon"><i class="fa-regular fa-calendar-days"></i></div>
-                    <h3>Jadwal Kuliah</h3>
-                    <div class="count" id="totalSchedule">0</div>
-                    <p>Total jadwal aktif</p>
-                </div>
-                <div class="feature-card">
-                    <div class="icon"><i class="fa-solid fa-wallet"></i></div>
-                    <h3>Total Saldo</h3>
-                    <div class="count" id="totalSaldo">Rp 0</div>
-                    <p>Keuangan Anda</p>
-                </div>
-                <div class="feature-card">
-                    <div class="icon"><i class="fa-solid fa-arrow-down" style="color: #16a34a;"></i></div>
-                    <h3>Pemasukan</h3>
-                    <div class="count" id="totalPemasukan" style="color: #16a34a;">Rp 0</div>
-                    <p>Total pemasukan</p>
-                </div>
-                <div class="feature-card">
-                    <div class="icon"><i class="fa-solid fa-arrow-up" style="color: #dc2626;"></i></div>
-                    <h3>Pengeluaran</h3>
-                    <div class="count" id="totalPengeluaran" style="color: #dc2626;">Rp 0</div>
-                    <p>Total pengeluaran</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
 </body>
 </html>
