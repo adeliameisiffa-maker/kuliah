@@ -373,7 +373,6 @@
             border: 1px solid #bfdbfe;
         }
 
-        /* Password strength */
         .password-strength {
             height: 4px;
             border-radius: 4px;
@@ -530,24 +529,16 @@
 
     <script>
         // ==========================================
-        // KONFIGURASI SUPABASE
+        // KONFIGURASI SUPABASE - HANYA 1 DEKLARASI
         // ==========================================
         const SUPABASE_URL = 'https://tnbvpqpchotveesdxuel.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_qE8MGS1eB2c4arvLkZjnpw_aQlEo58N';
 
         console.log('🚀 Halaman Login dimuat!');
-        console.log('📌 SUPABASE_URL:', SUPABASE_URL);
-        console.log('📌 SUPABASE_KEY:', SUPABASE_KEY.substring(0, 20) + '...');
 
-        // Inisialisasi Supabase
-        let supabase = null;
-        try {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            console.log('✅ Supabase client created successfully');
-        } catch (err) {
-            console.error('❌ Gagal membuat Supabase client:', err);
-            alert('❌ Gagal terhubung ke database. Silakan refresh halaman.');
-        }
+        // Buat Supabase client - HANYA SEKALI
+        const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        console.log('✅ Supabase client created');
 
         let isLogin = true;
         let isConnected = false;
@@ -558,17 +549,8 @@
         async function testConnection() {
             const statusEl = document.getElementById('connectionStatus');
 
-            if (!supabase) {
-                statusEl.className = 'connection-status status-error';
-                statusEl.innerHTML =
-                    `<i class="fa-solid fa-circle-xmark"></i><span>❌ Supabase client tidak tersedia</span>`;
-                isConnected = false;
-                showError('❌ Koneksi ke database gagal. Refresh halaman.');
-                return;
-            }
-
             try {
-                const { data, error } = await supabase.auth.getSession();
+                const { data, error } = await _supabase.auth.getSession();
 
                 if (error) {
                     statusEl.className = 'connection-status status-error';
@@ -581,15 +563,10 @@
                     statusEl.innerHTML =
                         `<i class="fa-solid fa-check-circle"></i><span>✅ Terhubung ke Supabase</span>`;
                     isConnected = true;
-                    console.log('✅ Koneksi Supabase berhasil');
 
-                    // Cek session
                     if (data.session) {
                         console.log('✅ User sudah login:', data.session.user.email);
-                        console.log('📌 Redirect ke index.html...');
                         window.location.href = 'index.html';
-                    } else {
-                        console.log('ℹ️ User belum login, silakan login atau daftar');
                     }
                 }
             } catch (err) {
@@ -727,14 +704,8 @@
                 return;
             }
 
-            if (!supabase) {
-                errorText.textContent = 'Koneksi ke database gagal!';
-                errorEl.classList.add('show');
-                return;
-            }
-
             try {
-                const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+                const { data, error } = await _supabase.auth.resetPasswordForEmail(email, {
                     redirectTo: window.location.origin + '/reset-password.html'
                 });
 
@@ -767,12 +738,10 @@
             const password = document.getElementById('loginPassword').value;
             const btn = document.getElementById('loginBtn');
 
-            // Reset errors
             document.getElementById('loginError').classList.remove('show');
             document.getElementById('loginSuccess').classList.remove('show');
             document.getElementById('loginInfo').classList.remove('show');
 
-            // Validasi
             if (!email) {
                 showError('❌ Email harus diisi!');
                 document.getElementById('loginEmailHint').classList.add('show');
@@ -787,24 +756,16 @@
             }
             document.getElementById('loginPasswordHint').classList.remove('show');
 
-            if (!supabase) {
-                showError('❌ Koneksi ke database gagal! Refresh halaman.');
-                return;
-            }
-
-            // Loading
             btn.disabled = true;
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memproses...`;
 
             try {
-                console.log('🔄 Mencoba login dengan:', email);
-                const { data, error } = await supabase.auth.signInWithPassword({
+                const { data, error } = await _supabase.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
 
                 if (error) {
-                    console.error('❌ Login error:', error);
                     showError('❌ ' + error.message);
                     btn.disabled = false;
                     btn.innerHTML = `<i class="fa-solid fa-right-to-bracket"></i> Masuk`;
@@ -814,13 +775,11 @@
                 if (data.user) {
                     console.log('✅ Login success:', data.user.email);
                     showSuccess('✅ Login berhasil! Mengalihkan...');
-
                     setTimeout(() => {
                         window.location.href = 'index.html';
                     }, 1500);
                 }
             } catch (err) {
-                console.error('❌ Unexpected error:', err);
                 showError('❌ Terjadi kesalahan: ' + err.message);
                 btn.disabled = false;
                 btn.innerHTML = `<i class="fa-solid fa-right-to-bracket"></i> Masuk`;
@@ -840,12 +799,10 @@
             const confirmPassword = document.getElementById('registerConfirmPassword').value;
             const btn = document.getElementById('registerBtn');
 
-            // Reset errors
             document.getElementById('loginError').classList.remove('show');
             document.getElementById('loginSuccess').classList.remove('show');
             document.getElementById('loginInfo').classList.remove('show');
 
-            // Validasi
             if (!name) {
                 showError('❌ Nama lengkap harus diisi!');
                 document.getElementById('registerNameHint').classList.add('show');
@@ -874,18 +831,11 @@
             }
             document.getElementById('registerConfirmHint').classList.remove('show');
 
-            if (!supabase) {
-                showError('❌ Koneksi ke database gagal! Refresh halaman.');
-                return;
-            }
-
-            // Loading
             btn.disabled = true;
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memproses...`;
 
             try {
-                console.log('🔄 Mencoba register:', email);
-                const { data, error } = await supabase.auth.signUp({
+                const { data, error } = await _supabase.auth.signUp({
                     email: email,
                     password: password,
                     options: {
@@ -896,7 +846,6 @@
                 });
 
                 if (error) {
-                    console.error('❌ Register error:', error);
                     showError('❌ ' + error.message);
                     btn.disabled = false;
                     btn.innerHTML = `<i class="fa-solid fa-user-plus"></i> Daftar`;
@@ -907,9 +856,9 @@
                     console.log('✅ Register success:', data.user.email);
                     showSuccess('✅ Pendaftaran berhasil! Silakan cek email untuk verifikasi.');
 
-                    // Simpan profil ke tabel profiles
+                    // Simpan profil
                     try {
-                        const { error: profileError } = await supabase
+                        await _supabase
                             .from('profiles')
                             .upsert({
                                 id: data.user.id,
@@ -917,14 +866,10 @@
                                 email: email,
                                 updated_at: new Date().toISOString()
                             });
-                        if (profileError) {
-                            console.warn('⚠️ Profile save warning:', profileError);
-                        }
                     } catch (profileErr) {
                         console.warn('⚠️ Profile error:', profileErr);
                     }
 
-                    // Auto switch ke login setelah 2 detik
                     setTimeout(() => {
                         if (!isLogin) switchMode();
                         document.getElementById('loginEmail').value = email;
@@ -934,7 +879,6 @@
                     }, 2000);
                 }
             } catch (err) {
-                console.error('❌ Unexpected error:', err);
                 showError('❌ Terjadi kesalahan: ' + err.message);
                 btn.disabled = false;
                 btn.innerHTML = `<i class="fa-solid fa-user-plus"></i> Daftar`;
@@ -945,43 +889,29 @@
         // SOCIAL LOGIN
         // ==========================================
         async function loginWithGoogle() {
-            if (!supabase) {
-                alert('❌ Koneksi ke database gagal! Refresh halaman.');
-                return;
-            }
             try {
-                console.log('🔄 Login with Google');
-                const { data, error } = await supabase.auth.signInWithOAuth({
+                const { data, error } = await _supabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: { redirectTo: window.location.origin + '/index.html' }
                 });
                 if (error) {
-                    console.error('❌ Google login error:', error);
                     alert('❌ Error: ' + error.message);
                 }
             } catch (err) {
-                console.error('❌ Google login error:', err);
                 alert('❌ Error: ' + err.message);
             }
         }
 
         async function loginWithGithub() {
-            if (!supabase) {
-                alert('❌ Koneksi ke database gagal! Refresh halaman.');
-                return;
-            }
             try {
-                console.log('🔄 Login with GitHub');
-                const { data, error } = await supabase.auth.signInWithOAuth({
+                const { data, error } = await _supabase.auth.signInWithOAuth({
                     provider: 'github',
                     options: { redirectTo: window.location.origin + '/index.html' }
                 });
                 if (error) {
-                    console.error('❌ GitHub login error:', error);
                     alert('❌ Error: ' + error.message);
                 }
             } catch (err) {
-                console.error('❌ GitHub login error:', err);
                 alert('❌ Error: ' + err.message);
             }
         }
@@ -1006,7 +936,6 @@
         // ==========================================
         document.addEventListener('DOMContentLoaded', function() {
             console.log('✅ DOM loaded');
-            // Test koneksi setelah 500ms
             setTimeout(testConnection, 500);
             console.log('✅ Halaman login siap!');
         });
