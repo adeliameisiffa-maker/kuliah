@@ -83,19 +83,6 @@
             background: white;
             box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1);
         }
-        .input-group input.error {
-            border-color: #dc2626;
-            background: #fef2f2;
-        }
-        .input-group .error-hint {
-            color: #dc2626;
-            font-size: 12px;
-            margin-top: 4px;
-            display: none;
-        }
-        .input-group .error-hint.show {
-            display: block;
-        }
         .btn-login {
             width: 100%;
             padding: 14px;
@@ -145,8 +132,13 @@
             font-weight: 600;
             cursor: pointer;
             text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            display: inline-block;
         }
         .switch-mode a:hover {
+            background: #fef2f2;
             text-decoration: underline;
         }
         .hidden {
@@ -189,12 +181,6 @@
             border-color: #dc2626;
             background: #fef2f2;
             transform: translateY(-2px);
-        }
-        .social-btn.google:hover {
-            border-color: #ea4335;
-        }
-        .social-btn.github:hover {
-            border-color: #24292e;
         }
         .error-msg {
             color: #dc2626;
@@ -240,6 +226,54 @@
         }
         .info-msg.show {
             display: flex;
+        }
+
+        .connection-status {
+            padding: 10px 12px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-connected {
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+        .status-error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        .status-loading {
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+        }
+
+        .password-strength {
+            height: 4px;
+            border-radius: 4px;
+            margin-top: 6px;
+            background: #e5e7eb;
+            overflow: hidden;
+        }
+        .password-strength .bar {
+            height: 100%;
+            width: 0%;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        .password-hint {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+            display: none;
+        }
+        .password-hint.show {
+            display: block;
         }
 
         /* Modal */
@@ -348,54 +382,6 @@
             display: block;
         }
 
-        .connection-status {
-            padding: 10px 12px;
-            border-radius: 10px;
-            margin-bottom: 16px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .status-connected {
-            background: #f0fdf4;
-            color: #16a34a;
-            border: 1px solid #bbf7d0;
-        }
-        .status-error {
-            background: #fef2f2;
-            color: #dc2626;
-            border: 1px solid #fecaca;
-        }
-        .status-loading {
-            background: #eff6ff;
-            color: #2563eb;
-            border: 1px solid #bfdbfe;
-        }
-
-        .password-strength {
-            height: 4px;
-            border-radius: 4px;
-            margin-top: 6px;
-            background: #e5e7eb;
-            overflow: hidden;
-        }
-        .password-strength .bar {
-            height: 100%;
-            width: 0%;
-            border-radius: 4px;
-            transition: all 0.3s;
-        }
-        .password-hint {
-            font-size: 12px;
-            color: #6b7280;
-            margin-top: 4px;
-            display: none;
-        }
-        .password-hint.show {
-            display: block;
-        }
-
         @media (max-width: 480px) {
             .login-box {
                 padding: 24px 20px;
@@ -440,11 +426,9 @@
         <form id="loginForm">
             <div class="input-group">
                 <input type="email" id="loginEmail" placeholder="Email" required>
-                <div class="error-hint" id="loginEmailHint">Email tidak valid</div>
             </div>
             <div class="input-group">
                 <input type="password" id="loginPassword" placeholder="Password" required>
-                <div class="error-hint" id="loginPasswordHint">Password harus diisi</div>
             </div>
             <div class="forgot-link">
                 <a onclick="openForgotPassword()">Lupa password?</a>
@@ -458,15 +442,12 @@
         <form id="registerForm" class="hidden">
             <div class="input-group">
                 <input type="text" id="registerName" placeholder="Nama Lengkap" required>
-                <div class="error-hint" id="registerNameHint">Nama harus diisi</div>
             </div>
             <div class="input-group">
                 <input type="email" id="registerEmail" placeholder="Email" required>
-                <div class="error-hint" id="registerEmailHint">Email tidak valid</div>
             </div>
             <div class="input-group">
                 <input type="password" id="registerPassword" placeholder="Password (min 6)" required minlength="6" oninput="checkPasswordStrength(this.value)">
-                <div class="error-hint" id="registerPasswordHint">Password minimal 6 karakter</div>
                 <div class="password-strength">
                     <div class="bar" id="passwordStrengthBar"></div>
                 </div>
@@ -476,7 +457,6 @@
             </div>
             <div class="input-group">
                 <input type="password" id="registerConfirmPassword" placeholder="Konfirmasi Password" required>
-                <div class="error-hint" id="registerConfirmHint">Password tidak sama</div>
             </div>
             <button type="submit" class="btn-login" id="registerBtn">
                 <i class="fa-solid fa-user-plus"></i> Daftar
@@ -489,11 +469,11 @@
         </div>
 
         <!-- Social Login -->
-        <button class="social-btn google" onclick="loginWithGoogle()">
+        <button class="social-btn" onclick="loginWithGoogle()">
             <i class="fa-brands fa-google" style="color: #ea4335; font-size: 18px;"></i>
             Google
         </button>
-        <button class="social-btn github" onclick="loginWithGithub()">
+        <button class="social-btn" onclick="loginWithGithub()">
             <i class="fa-brands fa-github" style="font-size: 18px;"></i>
             GitHub
         </button>
@@ -529,14 +509,13 @@
 
     <script>
         // ==========================================
-        // KONFIGURASI SUPABASE - HANYA 1 DEKLARASI
+        // KONFIGURASI SUPABASE
         // ==========================================
         const SUPABASE_URL = 'https://tnbvpqpchotveesdxuel.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_qE8MGS1eB2c4arvLkZjnpw_aQlEo58N';
 
         console.log('🚀 Halaman Login dimuat!');
 
-        // Buat Supabase client - HANYA SEKALI
         const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         console.log('✅ Supabase client created');
 
@@ -557,7 +536,6 @@
                     statusEl.innerHTML =
                         `<i class="fa-solid fa-circle-xmark"></i><span>❌ Gagal koneksi: ${error.message}</span>`;
                     isConnected = false;
-                    showError('❌ Koneksi ke database gagal: ' + error.message);
                 } else {
                     statusEl.className = 'connection-status status-connected';
                     statusEl.innerHTML =
@@ -565,7 +543,7 @@
                     isConnected = true;
 
                     if (data.session) {
-                        console.log('✅ User sudah login:', data.session.user.email);
+                        console.log('✅ User sudah login, redirect ke index.html');
                         window.location.href = 'index.html';
                     }
                 }
@@ -573,8 +551,6 @@
                 statusEl.className = 'connection-status status-error';
                 statusEl.innerHTML = `<i class="fa-solid fa-circle-xmark"></i><span>❌ Error: ${err.message}</span>`;
                 isConnected = false;
-                console.error('❌ Connection error:', err);
-                showError('❌ Error koneksi: ' + err.message);
             }
         }
 
@@ -620,9 +596,11 @@
         }
 
         // ==========================================
-        // SWITCH MODE
+        // SWITCH MODE - PERBAIKAN UTAMA
         // ==========================================
         function switchMode() {
+            console.log('🔄 Switch mode triggered! isLogin:', isLogin);
+
             isLogin = !isLogin;
             const loginForm = document.getElementById('loginForm');
             const registerForm = document.getElementById('registerForm');
@@ -630,20 +608,27 @@
             const switchLink = document.getElementById('switchLink');
 
             if (isLogin) {
+                // Tampilkan Login, Sembunyikan Register
                 loginForm.classList.remove('hidden');
                 registerForm.classList.add('hidden');
                 switchText.textContent = 'Belum punya akun?';
                 switchLink.textContent = 'Daftar sekarang';
+                document.querySelector('.logo h1').innerHTML = 'My<span>Dash</span>';
             } else {
+                // Tampilkan Register, Sembunyikan Login
                 loginForm.classList.add('hidden');
                 registerForm.classList.remove('hidden');
                 switchText.textContent = 'Sudah punya akun?';
                 switchLink.textContent = 'Masuk sekarang';
+                document.querySelector('.logo h1').innerHTML = '📝 Daftar <span>Akun</span>';
             }
 
+            // Reset pesan
             document.getElementById('loginError').classList.remove('show');
             document.getElementById('loginSuccess').classList.remove('show');
             document.getElementById('loginInfo').classList.remove('show');
+
+            console.log('✅ Switch mode selesai. isLogin:', isLogin);
         }
 
         // ==========================================
@@ -742,19 +727,10 @@
             document.getElementById('loginSuccess').classList.remove('show');
             document.getElementById('loginInfo').classList.remove('show');
 
-            if (!email) {
-                showError('❌ Email harus diisi!');
-                document.getElementById('loginEmailHint').classList.add('show');
+            if (!email || !password) {
+                showError('❌ Email dan password harus diisi!');
                 return;
             }
-            document.getElementById('loginEmailHint').classList.remove('show');
-
-            if (!password) {
-                showError('❌ Password harus diisi!');
-                document.getElementById('loginPasswordHint').classList.add('show');
-                return;
-            }
-            document.getElementById('loginPasswordHint').classList.remove('show');
 
             btn.disabled = true;
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memproses...`;
@@ -803,33 +779,20 @@
             document.getElementById('loginSuccess').classList.remove('show');
             document.getElementById('loginInfo').classList.remove('show');
 
-            if (!name) {
-                showError('❌ Nama lengkap harus diisi!');
-                document.getElementById('registerNameHint').classList.add('show');
+            if (!name || !email || !password || !confirmPassword) {
+                showError('❌ Semua field harus diisi!');
                 return;
             }
-            document.getElementById('registerNameHint').classList.remove('show');
-
-            if (!email) {
-                showError('❌ Email harus diisi!');
-                document.getElementById('registerEmailHint').classList.add('show');
-                return;
-            }
-            document.getElementById('registerEmailHint').classList.remove('show');
-
-            if (!password || password.length < 6) {
-                showError('❌ Password minimal 6 karakter!');
-                document.getElementById('registerPasswordHint').classList.add('show');
-                return;
-            }
-            document.getElementById('registerPasswordHint').classList.remove('show');
 
             if (password !== confirmPassword) {
                 showError('❌ Password dan konfirmasi password tidak sama!');
-                document.getElementById('registerConfirmHint').classList.add('show');
                 return;
             }
-            document.getElementById('registerConfirmHint').classList.remove('show');
+
+            if (password.length < 6) {
+                showError('❌ Password minimal 6 karakter!');
+                return;
+            }
 
             btn.disabled = true;
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memproses...`;
@@ -871,6 +834,7 @@
                     }
 
                     setTimeout(() => {
+                        // Switch ke mode login
                         if (!isLogin) switchMode();
                         document.getElementById('loginEmail').value = email;
                         btn.disabled = false;
@@ -894,9 +858,7 @@
                     provider: 'google',
                     options: { redirectTo: window.location.origin + '/index.html' }
                 });
-                if (error) {
-                    alert('❌ Error: ' + error.message);
-                }
+                if (error) alert('❌ Error: ' + error.message);
             } catch (err) {
                 alert('❌ Error: ' + err.message);
             }
@@ -908,16 +870,14 @@
                     provider: 'github',
                     options: { redirectTo: window.location.origin + '/index.html' }
                 });
-                if (error) {
-                    alert('❌ Error: ' + error.message);
-                }
+                if (error) alert('❌ Error: ' + error.message);
             } catch (err) {
                 alert('❌ Error: ' + err.message);
             }
         }
 
         // ==========================================
-        // KEYBOARD SHORTCUTS
+        // KEYBOARD & CLICK OUTSIDE
         // ==========================================
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
@@ -936,6 +896,7 @@
         // ==========================================
         document.addEventListener('DOMContentLoaded', function() {
             console.log('✅ DOM loaded');
+            console.log('✅ switchMode function tersedia:', typeof switchMode);
             setTimeout(testConnection, 500);
             console.log('✅ Halaman login siap!');
         });
