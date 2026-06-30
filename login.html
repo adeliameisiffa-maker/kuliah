@@ -212,6 +212,30 @@
         .success-msg.show {
             display: flex;
         }
+        .connection-status {
+            padding: 10px 12px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-connected {
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+        .status-error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        .status-loading {
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+        }
 
         /* Modal */
         .modal-overlay {
@@ -319,32 +343,6 @@
             display: block;
         }
 
-        /* Connection Status */
-        .connection-status {
-            padding: 10px 12px;
-            border-radius: 10px;
-            margin-bottom: 16px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .status-connected {
-            background: #f0fdf4;
-            color: #16a34a;
-            border: 1px solid #bbf7d0;
-        }
-        .status-error {
-            background: #fef2f2;
-            color: #dc2626;
-            border: 1px solid #fecaca;
-        }
-        .status-loading {
-            background: #eff6ff;
-            color: #2563eb;
-            border: 1px solid #bfdbfe;
-        }
-
         @media (max-width: 480px) {
             .login-box {
                 padding: 24px 20px;
@@ -354,7 +352,6 @@
 </head>
 <body>
     <div class="login-box">
-        <!-- Logo -->
         <div class="logo">
             <div class="logo-icon">
                 <i class="fa-solid fa-graduation-cap"></i>
@@ -363,25 +360,21 @@
             <p>Dashboard Kuliah & Keuangan</p>
         </div>
 
-        <!-- Connection Status -->
         <div id="connectionStatus" class="connection-status status-loading">
             <i class="fa-solid fa-spinner fa-spin"></i>
             <span>Mengecek koneksi...</span>
         </div>
 
-        <!-- Error Message -->
         <div id="loginError" class="error-msg">
             <i class="fa-solid fa-circle-exclamation"></i>
             <span id="errorText">Error message</span>
         </div>
 
-        <!-- Success Message -->
         <div id="loginSuccess" class="success-msg">
             <i class="fa-solid fa-check-circle"></i>
             <span id="successText">Success message</span>
         </div>
 
-        <!-- Login Form -->
         <form id="loginForm">
             <div class="input-group">
                 <input type="email" id="loginEmail" placeholder="Email" required>
@@ -397,7 +390,6 @@
             </button>
         </form>
 
-        <!-- Register Form -->
         <form id="registerForm" class="hidden">
             <div class="input-group">
                 <input type="text" id="registerName" placeholder="Nama Lengkap" required>
@@ -416,12 +408,10 @@
             </button>
         </form>
 
-        <!-- Divider -->
         <div class="divider">
             <span>atau</span>
         </div>
 
-        <!-- Social Login -->
         <button class="social-btn google" onclick="loginWithGoogle()">
             <i class="fa-brands fa-google" style="color: #ea4335; font-size: 18px;"></i>
             Google
@@ -431,32 +421,26 @@
             GitHub
         </button>
 
-        <!-- Switch Mode -->
         <div class="switch-mode">
             <span id="switchText">Belum punya akun?</span>
             <a id="switchLink" onclick="switchMode()">Daftar sekarang</a>
         </div>
     </div>
 
-    <!-- Modal Forgot Password -->
     <div id="forgotModal" class="modal-overlay">
         <div class="modal-box">
             <button class="modal-close" onclick="closeForgotPassword()">&times;</button>
             <h3><i class="fa-solid fa-key"></i> Lupa Password</h3>
             <p>Masukkan email Anda untuk reset password.</p>
-
             <div id="modalError" class="modal-error">
                 <span id="modalErrorText">Error</span>
             </div>
-
             <div id="modalSuccess" class="modal-success">
                 <span id="modalSuccessText">Sukses</span>
             </div>
-
             <div class="input-group">
                 <input type="email" id="resetEmail" placeholder="Email" required>
             </div>
-
             <div class="modal-actions">
                 <button class="btn-cancel" onclick="closeForgotPassword()">Batal</button>
                 <button class="btn-submit" onclick="sendResetPassword()">Kirim Link</button>
@@ -465,9 +449,6 @@
     </div>
 
     <script>
-        // ==========================================
-        // KONFIGURASI SUPABASE
-        // ==========================================
         const SUPABASE_URL = 'https://tnbvpqpchotveesdxuel.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_qE8MGS1eB2c4arvLkZjnpw_aQlEo58N';
 
@@ -479,32 +460,20 @@
         let isLogin = true;
         let isConnected = false;
 
-        // ==========================================
-        // TEST CONNECTION
-        // ==========================================
         async function testConnection() {
             const statusEl = document.getElementById('connectionStatus');
-
             try {
                 const { data, error } = await supabase.auth.getSession();
-
                 if (error) {
                     statusEl.className = 'connection-status status-error';
                     statusEl.innerHTML =
-                    `
-                            <i class="fa-solid fa-circle-xmark"></i>
-                            <span>❌ Gagal koneksi: ${error.message}</span>
-                        `;
+                        `<i class="fa-solid fa-circle-xmark"></i><span>❌ Gagal koneksi: ${error.message}</span>`;
                     isConnected = false;
                 } else {
                     statusEl.className = 'connection-status status-connected';
                     statusEl.innerHTML =
-                    `
-                            <i class="fa-solid fa-check-circle"></i>
-                            <span>✅ Terhubung ke Supabase</span>
-                        `;
+                        `<i class="fa-solid fa-check-circle"></i><span>✅ Terhubung ke Supabase</span>`;
                     isConnected = true;
-
                     if (data.session) {
                         console.log('✅ User sudah login, redirect ke index.html');
                         window.location.href = 'index.html';
@@ -512,25 +481,17 @@
                 }
             } catch (err) {
                 statusEl.className = 'connection-status status-error';
-                statusEl.innerHTML =
-                `
-                        <i class="fa-solid fa-circle-xmark"></i>
-                        <span>❌ Error: ${err.message}</span>
-                    `;
+                statusEl.innerHTML = `<i class="fa-solid fa-circle-xmark"></i><span>❌ Error: ${err.message}</span>`;
                 isConnected = false;
             }
         }
 
-        // ==========================================
-        // SWITCH MODE
-        // ==========================================
         function switchMode() {
             isLogin = !isLogin;
             const loginForm = document.getElementById('loginForm');
             const registerForm = document.getElementById('registerForm');
             const switchText = document.getElementById('switchText');
             const switchLink = document.getElementById('switchLink');
-
             if (isLogin) {
                 loginForm.classList.remove('hidden');
                 registerForm.classList.add('hidden');
@@ -542,14 +503,10 @@
                 switchText.textContent = 'Sudah punya akun?';
                 switchLink.textContent = 'Masuk sekarang';
             }
-
             document.getElementById('loginError').classList.remove('show');
             document.getElementById('loginSuccess').classList.remove('show');
         }
 
-        // ==========================================
-        // SHOW MESSAGES
-        // ==========================================
         function showError(message) {
             const errorEl = document.getElementById('loginError');
             document.getElementById('errorText').textContent = message;
@@ -564,9 +521,6 @@
             document.getElementById('loginError').classList.remove('show');
         }
 
-        // ==========================================
-        // FORGOT PASSWORD
-        // ==========================================
         function openForgotPassword() {
             document.getElementById('forgotModal').classList.add('active');
             document.getElementById('modalError').classList.remove('show');
@@ -585,36 +539,29 @@
             const errorText = document.getElementById('modalErrorText');
             const successEl = document.getElementById('modalSuccess');
             const successText = document.getElementById('modalSuccessText');
-
             errorEl.classList.remove('show');
             successEl.classList.remove('show');
-
             if (!email) {
                 errorText.textContent = 'Masukkan email!';
                 errorEl.classList.add('show');
                 return;
             }
-
             if (!isConnected) {
                 errorText.textContent = 'Koneksi ke database gagal!';
                 errorEl.classList.add('show');
                 return;
             }
-
             try {
                 const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
                     redirectTo: window.location.origin + '/reset-password.html'
                 });
-
                 if (error) {
                     errorText.textContent = error.message;
                     errorEl.classList.add('show');
                     return;
                 }
-
                 successText.textContent = '✅ Link reset password telah dikirim ke email Anda!';
                 successEl.classList.add('show');
-
                 setTimeout(() => {
                     closeForgotPassword();
                 }, 3000);
@@ -624,50 +571,38 @@
             }
         }
 
-        // ==========================================
-        // LOGIN - Redirect ke index.html
-        // ==========================================
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             console.log('📝 Login form submitted');
-
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             const btn = document.getElementById('loginBtn');
-
             document.getElementById('loginError').classList.remove('show');
             document.getElementById('loginSuccess').classList.remove('show');
-
             if (!email || !password) {
                 showError('Silakan isi email dan password!');
                 return;
             }
-
             if (!isConnected) {
                 showError('Koneksi ke database gagal!');
                 return;
             }
-
             btn.disabled = true;
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memproses...`;
-
             try {
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
-
                 if (error) {
                     showError(error.message);
                     btn.disabled = false;
                     btn.innerHTML = `<i class="fa-solid fa-right-to-bracket"></i> Masuk`;
                     return;
                 }
-
                 if (data.user) {
                     console.log('✅ Login success:', data.user.email);
                     showSuccess('✅ Login berhasil! Mengalihkan...');
-
                     setTimeout(() => {
                         window.location.href = 'index.html';
                     }, 1000);
@@ -679,45 +614,34 @@
             }
         });
 
-        // ==========================================
-        // REGISTER
-        // ==========================================
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             console.log('📝 Register form submitted');
-
             const name = document.getElementById('registerName').value;
             const email = document.getElementById('registerEmail').value;
             const password = document.getElementById('registerPassword').value;
             const confirmPassword = document.getElementById('registerConfirmPassword').value;
             const btn = document.getElementById('registerBtn');
-
             document.getElementById('loginError').classList.remove('show');
             document.getElementById('loginSuccess').classList.remove('show');
-
             if (!name || !email || !password || !confirmPassword) {
                 showError('Semua field harus diisi!');
                 return;
             }
-
             if (password !== confirmPassword) {
                 showError('Password dan konfirmasi password tidak sama!');
                 return;
             }
-
             if (password.length < 6) {
                 showError('Password minimal 6 karakter!');
                 return;
             }
-
             if (!isConnected) {
                 showError('Koneksi ke database gagal!');
                 return;
             }
-
             btn.disabled = true;
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memproses...`;
-
             try {
                 const { data, error } = await supabase.auth.signUp({
                     email: email,
@@ -726,17 +650,14 @@
                         data: { full_name: name }
                     }
                 });
-
                 if (error) {
                     showError(error.message);
                     btn.disabled = false;
                     btn.innerHTML = `<i class="fa-solid fa-user-plus"></i> Daftar`;
                     return;
                 }
-
                 if (data.user) {
                     showSuccess('✅ Pendaftaran berhasil! Silakan cek email untuk verifikasi.');
-
                     setTimeout(() => {
                         if (!isLogin) switchMode();
                         document.getElementById('loginEmail').value = email;
@@ -751,9 +672,6 @@
             }
         });
 
-        // ==========================================
-        // SOCIAL LOGIN - Redirect ke index.html
-        // ==========================================
         async function loginWithGoogle() {
             if (!isConnected) {
                 alert('Koneksi ke database gagal!');
@@ -786,9 +704,6 @@
             }
         }
 
-        // ==========================================
-        // KEYBOARD SHORTCUTS
-        // ==========================================
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 closeForgotPassword();
@@ -801,9 +716,6 @@
             }
         });
 
-        // ==========================================
-        // INIT
-        // ==========================================
         document.addEventListener('DOMContentLoaded', function() {
             console.log('✅ DOM loaded');
             testConnection();
